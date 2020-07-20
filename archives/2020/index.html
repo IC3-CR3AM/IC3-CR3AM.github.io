@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    
+    <title>Archives: 2020 | Hamster</title>
+    <meta name="description" content="A minimal hexo theme."/>
+    <meta name="keywords" content="hexo,theme,ctf,web"/>
+    <meta name="HandheldFriendly" content="True"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="google-site-verification" content=""/>
+    <meta name="baidu-site-verification" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta property="og:type" content="website">
+<meta property="og:title" content="Hamster">
+<meta property="og:url" content="http://yoursite.com/archives/2020/index.html">
+<meta property="og:site_name" content="Hamster">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+    
+
+    <!-- Favicon -->
+    
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Roboto:300,400,700" rel="stylesheet">
+
+    
+<link rel="stylesheet" href="/style.css">
+
+    <script>
+      function setLoadingBarProgress(num) {
+        document.getElementById('loading-bar').style.width = num + "%";
+      }
+    </script>
+
+    
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+
+<div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+
+<script>setLoadingBarProgress(20)</script>
+
+<div id="site-wrapper">
+
+    <header id="header">
+    <div id="header-wrapper" class="clearfix">
+        <a id="logo" href="/">
+            <img src="/img/logo.png"/>
+            <span id="site-desc">
+                delicious
+            </span>
+        </a>
+        <button id="site-nav-switch">
+            <span class="icon icon-menu"></span>
+        </button>
+    </div>
+</header>
+    <script>setLoadingBarProgress(40);</script>
+
+    <main id="main" role="main">
+        
+    
+
+
+  <section class="page-header archive">
+    <h1>- <span>2020</span> -</h1>
+  </section>
+
+
+
+
+<section class="post-list">
+  
+    <article class="post ">
+
+    
+        <h2 class="title">
+            <a href="/2020/07/20/reverse-c/">
+                c++反汇编小结
+            </a>
+        </h2>
+    
+    <time>
+        Jul 20, 2020
+    </time>
+    <section class="content">
+        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/48449367_p0.jpg" class>
+<h1><span id="c反汇编一">c++反汇编（一）</span></h1><h2><span id="基础数据类型">基础数据类型</span></h2><p>略，和c基本没区别。  </p>
+<h3><span id="引用">引用</span></h3><p>稍微讲一下<strong>引用</strong>，很多资料写的不是很清楚  </p>
+<p>c++中引用就是指针的封装，通过编译器来<br>创造引用的目的是为了简化指针操作<br>##</p>
+
+
+        
+
+        
+            <div class="tags">
+                <a class="tag-link" href="/tags/reverse/" rel="tag">reverse</a>
+            </div>
+        
+
+    </section>
+</article>
+  
+    <article class="post ">
+
+    
+        <h2 class="title">
+            <a href="/2020/07/20/preface/">
+                前言
+            </a>
+        </h2>
+    
+    <time>
+        Jul 20, 2020
+    </time>
+    <section class="content">
+        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/13461444_p0_meitu_3.jpg" class>
+
+<h1><span id="前言">前言</span></h1><p>本人萌新，入门不久，各位看官海涵</p>
+<p>写这个博客的目的有四，<br>其一、整理渗透和ctf-web的基础知识点（将持续更新）<br>其二、用博客作为自己的cheatsheet<br>其三、为日常打的比赛做一个记录<br>其四、写毕业论文看论文做个记录</p>
+<p>有问题欢迎留言，虽然目前留言系统还没时间弄</p>
+
+
+        
+
+        
+            <div class="tags">
+                <a class="tag-link" href="/tags/preface/" rel="tag">preface</a>
+            </div>
+        
+
+    </section>
+</article>
+  
+    <article class="post ">
+
+    
+        <h2 class="title">
+            <a href="/2020/07/15/xss1/">
+                xss
+            </a>
+        </h2>
+    
+    <time>
+        Jul 15, 2020
+    </time>
+    <section class="content">
+        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/68192046_p0.jpg" class>
+
+<h1><span id="xxs基础">xxs基础</span></h1><p>刚刚写了一点才发现飞猪队伍出的《CTF竞赛训练营》写的比我全多了，打基础的同学可以看看那本书，这里仅作为一点补充和个人感受的些许随笔。</p>
+<h2><span id="简介">简介</span></h2><p>网上的标准定义就不讲了，讲讲自己的一些理解<br>xss本质是因为不安全的浏览器返回内容，被浏览器执行所导致的一系列安全问题，所以xss这个漏洞本身只能导致浏览器的权限被拿（如果不算上后续利用的话）</p>
+<h2><span id="xxs基础">xxs基础</span></h2><h3><span id="反射型">反射型</span></h3><h3><span id="存储型">存储型</span></h3><h3><span id="dom型">DOM型</span></h3><h2><span id="xss绕过滤">xss绕过滤</span></h2><h3><span id="绕双引号和尖括号转译">绕双引号和尖括号转译</span></h3><p>如果该字符集被指定为UTF-7，可以用utf-7绕过</p>
+<hr>
+<h1><span id="xss绕csp">xss绕csp</span></h1><h2><span id="csp简介">csp简介</span></h2><p>内容安全策略(CSP)，本质是一个白名单，阻止非白名单的js脚本执行。</p>
+<h3><span id="svg绕csp">SVG绕csp</span></h3><p>SVG是一种矢量图格式，能够被浏览器动态渲染。</p>
+<p>首先，svg可以使用</p>
+
+
+        
+
+        
+            <div class="tags">
+                <a class="tag-link" href="/tags/web-xss/" rel="tag">web xss</a>
+            </div>
+        
+
+    </section>
+</article>
+  
+</section>
+
+
+
+        <script>setLoadingBarProgress(60);</script>
+    </main>
+
+    <footer id="footer" class="clearfix">
+
+    
+
+    <div class="social-wrapper">
+        
+            
+                <a href="https://github.com/IC3-CR3AM" class="social github"
+                   target="_blank" rel="external">
+                    <span class="icon icon-github"></span>
+                </a>
+            
+        
+    </div>
+
+    <div class="theme-by">Theme <span class="codename">Memory</span> designed by <a href="https://artifact.me/"
+                                                                                    target="_blank">Art Chen</a>.
+    </div>
+    <div>&copy; <a href="/">Hamster</a></div>
+
+</footer>
+
+
+    <script>setLoadingBarProgress(80);</script>
+    <div class="overlay"></div>
+</div>
+
+<div class="site-sidebar" id="site-sidebar">
+
+    
+
+    <div class="sidebar-switch clearfix "
+         style="display: none">
+        <a class="dark-btn active" data-toggle="toc">
+            <span class="icon icon-list"></span>
+            <span class="text">Index</span>
+        </a>
+        <a class="dark-btn" data-toggle="bio">
+            <span class="icon icon-person"></span>
+            <span class="text">Bio</span>
+        </a>
+    </div>
+
+    <div class="site-toc "
+         style="display: none">
+        
+            <div class="no-index">No Index</div>
+        
+    </div>
+
+    <div class="site-bio show"
+         style="display: block">
+
+        <div class="about-me clearfix">
+            <div class="avatar">
+                <img src="/img/avatar.png"/>
+            </div>
+            <div class="info">
+                <a class="name dark-btn" href="/about">
+                    John Doe
+                </a>
+            </div>
+            <div class="info">
+                <span class="item desc">
+                    
+                </span>
+            </div>
+        </div>
+
+        <div class="menu section">
+            <ul class="clearfix">
+                
+                    <li class="left">
+                        <a href="/about"
+                           onfocus="this.blur();"
+                           class="nav-about dark-btn block">
+                            About
+                        </a>
+                    </li>
+                
+                    <li class="right">
+                        <a href="/archives"
+                           onfocus="this.blur();"
+                           class="nav-archives dark-btn block">
+                            Archives
+                        </a>
+                    </li>
+                
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="shortcuts">
+        <a href="#header" class="top window-nav dark-btn" id="go-top">
+            <span class="icon icon-chevron-thin-up"></span>
+        </a>
+        <a class="close dark-btn" id="sidebar-close">
+            <span class="icon icon-close"></span>
+        </a>
+        <a href="#footer" class="top window-nav dark-btn" id="go-bottom">
+            <span class="icon icon-chevron-thin-down"></span>
+        </a>
+    </div>
+
+</div>
+
+
+
+
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>window.jQuery || document.write('<script src="/js/jquery.min.js"><\/script>')</script>
+
+
+<script src="/js/jquery.fitvids.js"></script>
+
+<script>
+  var GOOGLE_CUSTOM_SEARCH_API_KEY = "";
+  var GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "";
+  var ALGOLIA_API_KEY = "";
+  var ALGOLIA_APP_ID = "";
+  var ALGOLIA_INDEX_NAME = "";
+  var AZURE_SERVICE_NAME = "";
+  var AZURE_INDEX_NAME = "";
+  var AZURE_QUERY_KEY = "";
+  var SEARCH_SERVICE = "";
+  var universalSearchConfig = {};
+  if (SEARCH_SERVICE === 'google') {
+    universalSearchConfig = {
+      searchService: SEARCH_SERVICE,
+      apiKey: GOOGLE_CUSTOM_SEARCH_API_KEY,
+      engineId: GOOGLE_CUSTOM_SEARCH_ENGINE_ID,
+      imagePath: "/img/"
+    };
+  } else if (SEARCH_SERVICE === 'algolia') {
+    universalSearchConfig = {
+      searchService: SEARCH_SERVICE,
+      apiKey: ALGOLIA_API_KEY,
+      appId: ALGOLIA_APP_ID,
+      indexName: ALGOLIA_INDEX_NAME,
+      imagePath: "/img/"
+    };
+  } else if (SEARCH_SERVICE === 'azure') {
+    universalSearchConfig = {
+      searchService: SEARCH_SERVICE,
+      serviceName: AZURE_SERVICE_NAME,
+      indexName: AZURE_INDEX_NAME,
+      apiKey: AZURE_QUERY_KEY,
+      imagePath: "/img/"
+    };
+  }
+</script>
+
+<script src="/js/app.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+
+
+
+<script>setLoadingBarProgress(100);</script>
+
+</body>
+</html>
