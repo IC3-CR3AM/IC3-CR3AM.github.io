@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     
-    <title>Archives: 2020 | Hamster</title>
+    <title>静态分析学习笔记 | Hamster</title>
     <meta name="description" content="A minimal hexo theme."/>
     <meta name="keywords" content="hexo,theme,ctf,web"/>
     <meta name="HandheldFriendly" content="True"/>
@@ -12,13 +12,20 @@
     <meta name="google-site-verification" content=""/>
     <meta name="baidu-site-verification" content=""/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta property="og:type" content="website">
-<meta property="og:title" content="Hamster">
-<meta property="og:url" content="http://yoursite.com/archives/2020/index.html">
+    <meta name="description" content="一些话南大的软件分析课程最近放在b站上了，虽然只有一半的课程老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看就我个人的理解，这门课是针对逆向的学术扩展目前学习了两节课，再接再厉 IR静态分析是基于IR的，也就是中间语言进行分析的选择IR而不是AST的理由： IR更加“低级”   通常不依赖语言   简洁，没什么冗余信息   包含控制流信息  虽然有些也能在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="静态分析学习笔记">
+<meta property="og:url" content="http://yoursite.com/2020/07/22/static-analyse/index.html">
 <meta property="og:site_name" content="Hamster">
+<meta property="og:description" content="一些话南大的软件分析课程最近放在b站上了，虽然只有一半的课程老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看就我个人的理解，这门课是针对逆向的学术扩展目前学习了两节课，再接再厉 IR静态分析是基于IR的，也就是中间语言进行分析的选择IR而不是AST的理由： IR更加“低级”   通常不依赖语言   简洁，没什么冗余信息   包含控制流信息  虽然有些也能在">
 <meta property="og:locale" content="ch">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/3AC.PNG">
+<meta property="article:published_time" content="2020-07-22T13:01:34.000Z">
+<meta property="article:modified_time" content="2020-07-22T15:55:48.504Z">
 <meta property="article:author" content="IC3-CR3AM">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png">
     
 
     <!-- Favicon -->
@@ -65,33 +72,20 @@
     <script>setLoadingBarProgress(40);</script>
 
     <main id="main" role="main">
-        
-    
-
-
-  <section class="page-header archive">
-    <h1>- <span>2020</span> -</h1>
-  </section>
-
-
-
-
-<section class="post-list">
-  
-    <article class="post ">
-
-    
-        <h2 class="title">
-            <a href="/2020/07/22/static-analyse/">
-                静态分析学习笔记
-            </a>
-        </h2>
-    
+        <article id="post-static-analyse"
+         class="post article white-box article-type-post"
+         itemscope itemprop="blogPost">
+    <h2 class="title">
+        <a href="/2020/07/22/static-analyse/">
+            静态分析学习笔记
+        </a>
+    </h2>
     <time>
         Jul 22, 2020
     </time>
     <section class="content">
-        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png" class>
+        <div class="article-entry" itemprop="articleBody">
+            <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png" class>
 
 <h1><span id="一些话">一些话</span></h1><p>南大的软件分析课程最近放在b站上了，虽然只有一半的课程<br>老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看<br>就我个人的理解，这门课是针对逆向的学术扩展<br>目前学习了两节课，再接再厉</p>
 <h2><span id="ir">IR</span></h2><p>静态分析是基于IR的，也就是中间语言进行分析的<br>选择IR而不是AST的理由：</p>
@@ -119,174 +113,18 @@ rop：关系操作，例如大于等于</code></pre><h3><span id="ssa提及">SSA
 2.两个紧接着，上下会连续执行的块
 3.将原本三地址码的跳转标签换成BB的标签
 4.最后，加上入口和出口模块，主要是用来方便分析程序进行操作</code></pre>
-
-        
-
-        
-
+        </div>
+        <div class="article-tags tags">
+            
+        </div>
     </section>
 </article>
-  
-    <article class="post ">
-
-    
-        <h2 class="title">
-            <a href="/2020/07/22/asset-collection/">
-                资产收集
-            </a>
-        </h2>
-    
-    <time>
-        Jul 22, 2020
-    </time>
-    <section class="content">
-        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/5290131_p0.jpg" class>
-
-<h1><span id="简介">简介</span></h1><p>做渗透的第一步就是信息收集，信息收集的第一步就是资产收集<br>今天想到一个问题，怎样才能吧资产收集的比较全面？</p>
-<h1><span id="个人主要方法">个人主要方法</span></h1><p>rapid7在网上公布了700g的前后dns解析记录，并且每个月更新一次，内容比较全。<br>只要dns解析还要到根域上去解析，数据就会一直有<br>加上oneforall，差不多能把大部分的资产收集到位</p>
-<h1><span id="其他的思想">其他的思想</span></h1><p>包括不限于：<br>    证书、censys、各种空间搜索引擎+特征、天眼查等</p>
-<p>欢迎留言补充，一起分享知识点。</p>
 
 
-        
-
-        
-
+    <section id="comments">
+        <div id="disqus_thread"></div>
     </section>
-</article>
-  
-    <article class="post ">
 
-    
-        <h2 class="title">
-            <a href="/2020/07/21/java-unserialize/">
-                java反序列化
-            </a>
-        </h2>
-    
-    <time>
-        Jul 21, 2020
-    </time>
-    <section class="content">
-        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76081770_p0.jpg" class>
-
-<h1><span id="重0开始的java反序列化学习之路">重0开始的java反序列化学习之路</span></h1><p>p神的文章写java反序列化非常好，入门友好型<br>内容都在他的知识星球上emmmm</p>
-
-
-        
-
-        
-
-    </section>
-</article>
-  
-    <article class="post ">
-
-    
-        <h2 class="title">
-            <a href="/2020/07/20/reverse-c/">
-                c++反汇编小结
-            </a>
-        </h2>
-    
-    <time>
-        Jul 20, 2020
-    </time>
-    <section class="content">
-        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/48449367_p0.jpg" class>
-
-<h1><span id="c反汇编一">c++反汇编（一）</span></h1><p>有些太基础的东西就没不记录了。仅作为查漏补缺</p>
-<h2><span id="基础数据类型">基础数据类型</span></h2><p>略，和c基本没区别。  </p>
-<h3><span id="引用">引用</span></h3><p>稍微讲一下<strong>引用</strong>，很多资料写的不是很清楚  </p>
-<p>c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。<br>创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。</p>
-<h3><span id="常量">常量</span></h3><p>由#define修饰后会被编译为立即数寻址。<br>由const修饰的变量本质上还是变量，在编译期间检测是否有修改过。因为本身还是变量，所以通过指针的方式获取，并且强制类型转换就可以修改。<br>那么被const修饰的变量本身也不会像真常量一样放在常量数据区，而是通过作用域决定在内存中的位置。</p>
-<h2><span id="启动函数">启动函数</span></h2><p>一般由mainCRTStartUp函数作为从kernal32出来的程序入口（入口函数名可能会变）。<br>主要负责堆内存的初始化，main函数所需要的三个参数的初始化，分别为argc，argv，env。</p>
-<p>PS：在OllyDbg中需要手动找main，可以一起寻找进入main函数前的一些初始化函数，比如getCommandLineA，再顺着往下找，看到三次参数压栈就知道马上要进入main了。</p>
-<h2><span id="函数调用方式">函数调用方式</span></h2><p>vc++下有三种调用方式_cdecl,_stdcall,_fastcall</p>
-<pre><code>_cdecl：是默认调用方式，调用者负责平衡栈，不定参数的函数可以使用  
-_stdcall：被调用者平衡栈，不定参数的函数无法使用  
-_fastcall：比_stdcall多了一个用寄存器来传递参数  </code></pre><p>PS，在优化后，可能出现集中在一起进行一次栈平衡的操作</p>
-<p>待续。。。</p>
-
-
-        
-
-        
-            <div class="tags">
-                <a class="tag-link" href="/tags/reverse/" rel="tag">reverse</a>
-            </div>
-        
-
-    </section>
-</article>
-  
-    <article class="post ">
-
-    
-        <h2 class="title">
-            <a href="/2020/07/20/preface/">
-                前言
-            </a>
-        </h2>
-    
-    <time>
-        Jul 20, 2020
-    </time>
-    <section class="content">
-        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/13461444_p0_meitu_3.jpg" class>
-
-<h1><span id="前言">前言</span></h1><p>本人萌新，入门不久，各位看官海涵</p>
-<p>写这个博客的目的有四，<br>其一、整理渗透和ctf-web的基础知识点（将持续更新）<br>其二、用博客作为自己的cheatsheet<br>其三、为日常打的比赛做一个记录<br>其四、写毕业论文看论文做个记录</p>
-<p>有问题欢迎留言</p>
-
-
-        
-
-        
-            <div class="tags">
-                <a class="tag-link" href="/tags/preface/" rel="tag">preface</a>
-            </div>
-        
-
-    </section>
-</article>
-  
-    <article class="post ">
-
-    
-        <h2 class="title">
-            <a href="/2020/07/15/xss1/">
-                xss
-            </a>
-        </h2>
-    
-    <time>
-        Jul 15, 2020
-    </time>
-    <section class="content">
-        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/68192046_p0.jpg" class>
-
-<h1><span id="xxs基础">xxs基础</span></h1><p>刚刚写了一点才发现飞猪队伍出的《CTF竞赛训练营》写的比我全多了，打基础的同学可以看看那本书，这里仅作为一点补充和个人感受的些许随笔。</p>
-<h2><span id="简介">简介</span></h2><p>网上的标准定义就不讲了，讲讲自己的一些理解<br>xss本质是因为不安全的浏览器返回内容，被浏览器执行所导致的一系列安全问题，所以xss这个漏洞本身只能导致浏览器的权限被拿（如果不算上后续利用的话）</p>
-<h2><span id="xxs基础">xxs基础</span></h2><h3><span id="反射型">反射型</span></h3><h3><span id="存储型">存储型</span></h3><h3><span id="dom型">DOM型</span></h3><h2><span id="xss绕过滤">xss绕过滤</span></h2><h3><span id="绕双引号和尖括号转译">绕双引号和尖括号转译</span></h3><p>如果该字符集被指定为UTF-7，可以用utf-7绕过</p>
-<hr>
-<h1><span id="xss绕csp">xss绕csp</span></h1><h2><span id="csp简介">csp简介</span></h2><p>内容安全策略(CSP)，本质是一个白名单，阻止非白名单的js脚本执行。</p>
-<h3><span id="svg绕csp">SVG绕csp</span></h3><p>SVG是一种矢量图格式，能够被浏览器动态渲染。</p>
-<p>首先，svg可以使用</p>
-
-
-        
-
-        
-            <div class="tags">
-                <a class="tag-link" href="/tags/web-xss/" rel="tag">web xss</a>
-            </div>
-        
-
-    </section>
-</article>
-  
-</section>
 
 
 
@@ -404,11 +242,13 @@ _fastcall：比_stdcall多了一个用寄存器来传递参数  </code></pre><p>
     <script>
       var disqus_shortname = 'ic3-cr3am';
       
+      var disqus_url = 'http://yoursite.com/2020/07/22/static-analyse/';
+      
       (function () {
         var dsq = document.createElement('script');
         dsq.type = 'text/javascript';
         dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/count.js';
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
         (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
       })();
     </script>

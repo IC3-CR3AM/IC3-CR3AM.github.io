@@ -82,6 +82,55 @@
 
     
         <h2 class="title">
+            <a href="/2020/07/22/static-analyse/">
+                静态分析学习笔记
+            </a>
+        </h2>
+    
+    <time>
+        Jul 22, 2020
+    </time>
+    <section class="content">
+        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png" class>
+
+<h1><span id="一些话">一些话</span></h1><p>南大的软件分析课程最近放在b站上了，虽然只有一半的课程<br>老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看<br>就我个人的理解，这门课是针对逆向的学术扩展<br>目前学习了两节课，再接再厉</p>
+<h2><span id="ir">IR</span></h2><p>静态分析是基于IR的，也就是中间语言进行分析的<br>选择IR而不是AST的理由：</p>
+<pre><code>IR更加“低级”  
+通常不依赖语言  
+简洁，没什么冗余信息  
+包含控制流信息  </code></pre><p>虽然有些也能在ast上分析</p>
+<h3><span id="3ac三地址码">3AC——三地址码</span></h3><p>定义：在每一条语句里，等号右边只能由一个操作符。以及一句语句里最多只有三个地址<br>以下一些基本的定义，</p>
+<pre><code>bop：二元操作  
+uop：一元操作  
+L:标签  
+rop：关系操作，例如大于等于</code></pre><h3><span id="ssa提及">SSA（提及）</span></h3><p>Static Single Assignment<br>定义：</p>
+<pre><code>给每个定义一个新的名字  
+并且这个名字在后续语句里也会用到
+每个变量有且只有一个定义</code></pre><p>对于合并操作有个专门的函数，叫做（Phi-function）<br>优点：对上下文的顺序，可以将控制流信息通过独立的名字，根据上下文进行推断出；定义和使用非常准确<br>缺点：引入太多变量和phi-funtion，会导致效率大大降低</p>
+<h3><span id="控制流分析">控制流分析</span></h3><p>这个分析经常被用来生成控制流图<br>控制流图又是控制分析的基础，一旦生成了图就可以用一些图论的结论，分析它的前驱后继的关系也相对容易<br>看下图，每个节点既可以用单独的三地址码语句，也可以用BB（Basic Block）<br><img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/3AC.PNG" alt></p>
+<h3><span id="basic-blocksbb基本块">Basic Blocks（BB，基本块）</span></h3><p>基本块，将控制流按照一定的规则进行分割，将代码分成一块块，每一块都是一个BB，将所有的BB根据控制流连线就成了CFG——控制流图<br>定义：每一个块只有一个入口一个出口，本且将每一块填充的连续代码尽可能地多<br>BB的生成算法：  </p>
+<pre><code>1.找到所有BB的入口，
+    第一条指令
+    所有的跳转目标
+    跳转语句的下一条
+2.建立基本块，
+    将每一个入口下后续的语句纳入BB，直到碰到下一个入口</code></pre><p>CFG生成算法：</p>
+<pre><code>1.块末尾的跳转到新块的头
+2.两个紧接着，上下会连续执行的块
+3.将原本三地址码的跳转标签换成BB的标签
+4.最后，加上入口和出口模块，主要是用来方便分析程序进行操作</code></pre>
+
+        
+
+        
+
+    </section>
+</article>
+  
+    <article class="post ">
+
+    
+        <h2 class="title">
             <a href="/2020/07/22/asset-collection/">
                 资产收集
             </a>
