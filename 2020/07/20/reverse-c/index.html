@@ -12,17 +12,17 @@
     <meta name="google-site-verification" content=""/>
     <meta name="baidu-site-verification" content=""/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="c++反汇编（一）基础数据类型略，和c基本没区别。   引用稍微讲一下引用，很多资料写的不是很清楚   c++中引用就是指针的封装，通过编译器来创造引用的目的是为了简化指针操作##">
+    <meta name="description" content="c++反汇编（一）有些太基础的东西就没不记录了。仅作为查漏补缺 基础数据类型略，和c基本没区别。   引用稍微讲一下引用，很多资料写的不是很清楚   c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="c++反汇编小结">
 <meta property="og:url" content="http://yoursite.com/2020/07/20/reverse-c/index.html">
 <meta property="og:site_name" content="Hamster">
-<meta property="og:description" content="c++反汇编（一）基础数据类型略，和c基本没区别。   引用稍微讲一下引用，很多资料写的不是很清楚   c++中引用就是指针的封装，通过编译器来创造引用的目的是为了简化指针操作##">
-<meta property="og:locale" content="en_US">
+<meta property="og:description" content="c++反汇编（一）有些太基础的东西就没不记录了。仅作为查漏补缺 基础数据类型略，和c基本没区别。   引用稍微讲一下引用，很多资料写的不是很清楚   c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。">
+<meta property="og:locale" content="ch">
 <meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/48449367_p0.jpg">
 <meta property="article:published_time" content="2020-07-20T06:03:16.000Z">
-<meta property="article:modified_time" content="2020-07-20T13:50:42.613Z">
-<meta property="article:author" content="John Doe">
+<meta property="article:modified_time" content="2020-07-22T12:14:41.854Z">
+<meta property="article:author" content="IC3-CR3AM">
 <meta property="article:tag" content="reverse">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/48449367_p0.jpg">
@@ -86,9 +86,19 @@
     <section class="content">
         <div class="article-entry" itemprop="articleBody">
             <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/48449367_p0.jpg" class>
-<h1><span id="c反汇编一">c++反汇编（一）</span></h1><h2><span id="基础数据类型">基础数据类型</span></h2><p>略，和c基本没区别。  </p>
+
+<h1><span id="c反汇编一">c++反汇编（一）</span></h1><p>有些太基础的东西就没不记录了。仅作为查漏补缺</p>
+<h2><span id="基础数据类型">基础数据类型</span></h2><p>略，和c基本没区别。  </p>
 <h3><span id="引用">引用</span></h3><p>稍微讲一下<strong>引用</strong>，很多资料写的不是很清楚  </p>
-<p>c++中引用就是指针的封装，通过编译器来<br>创造引用的目的是为了简化指针操作<br>##</p>
+<p>c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。<br>创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。</p>
+<h3><span id="常量">常量</span></h3><p>由#define修饰后会被编译为立即数寻址。<br>由const修饰的变量本质上还是变量，在编译期间检测是否有修改过。因为本身还是变量，所以通过指针的方式获取，并且强制类型转换就可以修改。<br>那么被const修饰的变量本身也不会像真常量一样放在常量数据区，而是通过作用域决定在内存中的位置。</p>
+<h2><span id="启动函数">启动函数</span></h2><p>一般由mainCRTStartUp函数作为从kernal32出来的程序入口（入口函数名可能会变）。<br>主要负责堆内存的初始化，main函数所需要的三个参数的初始化，分别为argc，argv，env。</p>
+<p>PS：在OllyDbg中需要手动找main，可以一起寻找进入main函数前的一些初始化函数，比如getCommandLineA，再顺着往下找，看到三次参数压栈就知道马上要进入main了。</p>
+<h2><span id="函数调用方式">函数调用方式</span></h2><p>vc++下有三种调用方式_cdecl,_stdcall,_fastcall</p>
+<pre><code>_cdecl：是默认调用方式，调用者负责平衡栈，不定参数的函数可以使用  
+_stdcall：被调用者平衡栈，不定参数的函数无法使用  
+_fastcall：比_stdcall多了一个用寄存器来传递参数  </code></pre><p>PS，在优化后，可能出现集中在一起进行一次栈平衡的操作</p>
+<p>待续。。。</p>
 
         </div>
         <div class="article-tags tags">
@@ -99,6 +109,10 @@
     </section>
 </article>
 
+
+    <section id="comments">
+        <div id="disqus_thread"></div>
+    </section>
 
 
 
@@ -165,7 +179,7 @@
             </div>
             <div class="info">
                 <a class="name dark-btn" href="/about">
-                    John Doe
+                    IC3-CR3AM
                 </a>
             </div>
             <div class="info">
@@ -213,6 +227,20 @@
 
 </div>
 
+
+    <script>
+      var disqus_shortname = 'ic3-cr3am';
+      
+      var disqus_url = 'http://yoursite.com/2020/07/20/reverse-c/';
+      
+      (function () {
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
 
 
 
