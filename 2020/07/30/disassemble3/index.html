@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     
-    <title>java反序列化 | Hamster</title>
+    <title>c++反汇编小结（3） | Hamster</title>
     <meta name="description" content="A minimal hexo theme."/>
     <meta name="keywords" content="hexo,theme,ctf,web"/>
     <meta name="HandheldFriendly" content="True"/>
@@ -12,19 +12,20 @@
     <meta name="google-site-verification" content=""/>
     <meta name="baidu-site-verification" content=""/>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="重0开始的java反序列化学习之路p神的文章写java反序列化非常好，入门友好型内容都在他的知识星球上emmmm">
+    <meta name="description" content="虚函数题外话，个人理解，虚函数是多态机制的重要基础 虚函数机制虚函数：由virtual修饰虚表：存储虚函数首地址虚表指针：指向虚表首地址   类对象定义的时候就会调用构造函数初始化，这时候会把虚表地址存入虚表指针中另，虚表在程序中的地址相对固定，在链接的时候就已经确定下来了   调用过程：通过多态访问虚函数，先通过访问对象虚表指针找到虚表，再通过虚表内存的虚函数首地址访问到对应的虚函数但是，如">
 <meta property="og:type" content="article">
-<meta property="og:title" content="java反序列化">
-<meta property="og:url" content="http://yoursite.com/2020/07/21/java-unserialize/index.html">
+<meta property="og:title" content="c++反汇编小结（3）">
+<meta property="og:url" content="http://yoursite.com/2020/07/30/disassemble3/index.html">
 <meta property="og:site_name" content="Hamster">
-<meta property="og:description" content="重0开始的java反序列化学习之路p神的文章写java反序列化非常好，入门友好型内容都在他的知识星球上emmmm">
+<meta property="og:description" content="虚函数题外话，个人理解，虚函数是多态机制的重要基础 虚函数机制虚函数：由virtual修饰虚表：存储虚函数首地址虚表指针：指向虚表首地址   类对象定义的时候就会调用构造函数初始化，这时候会把虚表地址存入虚表指针中另，虚表在程序中的地址相对固定，在链接的时候就已经确定下来了   调用过程：通过多态访问虚函数，先通过访问对象虚表指针找到虚表，再通过虚表内存的虚函数首地址访问到对应的虚函数但是，如">
 <meta property="og:locale" content="ch">
-<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76081770_p0.jpg">
-<meta property="article:published_time" content="2020-07-21T04:32:50.000Z">
-<meta property="article:modified_time" content="2020-07-22T12:36:17.218Z">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p3.jpg">
+<meta property="article:published_time" content="2020-07-30T06:55:04.000Z">
+<meta property="article:modified_time" content="2020-08-02T16:44:24.715Z">
 <meta property="article:author" content="IC3-CR3AM">
+<meta property="article:tag" content="disassemble">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76081770_p0.jpg">
+<meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p3.jpg">
     
 
     <!-- Favicon -->
@@ -71,25 +72,40 @@
     <script>setLoadingBarProgress(40);</script>
 
     <main id="main" role="main">
-        <article id="post-java-unserialize"
+        <article id="post-disassemble3"
          class="post article white-box article-type-post"
          itemscope itemprop="blogPost">
     <h2 class="title">
-        <a href="/2020/07/21/java-unserialize/">
-            java反序列化
+        <a href="/2020/07/30/disassemble3/">
+            c++反汇编小结（3）
         </a>
     </h2>
     <time>
-        Jul 21, 2020
+        Jul 30, 2020
     </time>
     <section class="content">
         <div class="article-entry" itemprop="articleBody">
-            <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76081770_p0.jpg" class>
+            <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p3.jpg" class>
 
-<h1><span id="重0开始的java反序列化学习之路">重0开始的java反序列化学习之路</span></h1><p>p神的文章写java反序列化非常好，入门友好型<br>内容都在他的知识星球上emmmm</p>
+<h2><span id="虚函数">虚函数</span></h2><p>题外话，个人理解，虚函数是多态机制的重要基础</p>
+<h3><span id="虚函数机制">虚函数机制</span></h3><p>虚函数：由virtual修饰<br>虚表：存储虚函数首地址<br>虚表指针：指向虚表首地址  </p>
+<p>类对象定义的时候就会调用构造函数初始化，这时候会把虚表地址存入虚表指针中<br>另，虚表在程序中的地址相对固定，在链接的时候就已经确定下来了  </p>
+<p>调用过程：<br>通过多态访问虚函数，先通过访问对象虚表指针找到虚表，再通过虚表内存的虚函数首地址访问到对应的虚函数<br>但是，如果对象直接使用了自身的成员虚函数，则不必通过间接的访问方式，直接通过偏移访问对应虚函数  </p>
+<p>另，不仅仅构造函数会调用，析构函数也会对虚表指针进行操作，重新让虚表指针指向自身虚表，防止成员函数修改虚表指针导致析构出错  </p>
+<h3><span id="通过虚表查找相关构造函数">通过虚表查找相关构造函数</span></h3><p>由于构造函数可能会被重载比较复杂，可以从析构函数找起<br>先找到全局调用atexit函数的地方，可知atexit的参数就是析构函数的代理函数，从这个代理函数就能找到对应的析构函数，再根据这个析构函数所关联的虚表，找到所有关联这个虚表所有的构造函数和析构函数</p>
+<h2><span id="继承和多重继承">继承和多重继承</span></h2><h3><span id="识别类和类的关系">识别类和类的关系</span></h3><p>冷知识，父类的私有成员变量，也存储在子类中，不允许访问只存在于编译层面  </p>
+<p>在定义对象的时候会优先调用父类的构造函数再子类的构造函数（废话）<br>那么子类对象的内存布局是什么样的？<br>对象的首地址存放的是父类的成员，接着才是子类的成员，这也是为什么子类对象能操作父类的变量，因为数据都存在子类对象里<br>这样做的好处就是在使用多态性质的时候，将子类类型转换成父类时也不会出错  </p>
+<h4><span id="子类使用父类成员函数">子类使用父类成员函数</span></h4><p>按理说子类中没有保存父类的成员函数，应该是访问不到的<br>但是编译器通过名称粉碎法（暂时还不了解），在成员函数调用其他成员函数时可以匹配当前作用域  </p>
+<h4><span id="多重继承">多重继承</span></h4><p>在内存中，多个父类在对象中的内存布局，取决于多个父类的顺序，靠左边的父类在内存中排前面，然后按顺序排列<br>并且在使用多态的时候也不单单把对象首地址当作this指针，而是会根据父类来移动一段距离，找到父类的内存地址作为this指针<br>同时在类的内存中保存着所有父类的虚表<br>构造函数依次调用每一个父类的构造函数  </p>
+<h4><span id="虚基类">虚基类</span></h4><p>也就是抽象类<br>之前一直不是很理解抽象类存在的意义，很多时候不用抽象类也能完成<br>看了汇编之后发现，通过继承抽象类，直接继承到了抽象类的虚表以及虚表指针，使得更好的完成多态  </p>
+<p>因为纯虚函数没有实现，内存中指向的虚函数地址为空。编译器为了防止误用纯虚函数把首地址改为了__purecall，如果触发就会发出错误编码信息0x19<br>并且在release编译器下，纯虚函数会被优化掉  </p>
+<h4><span id="菱形继承">菱形继承</span></h4><p>菱形继承会产生多义性的问题<br>为了解决这个问题引入了虚继承的概念，出了在对象内存中保存所有父类和祖父类的信息外还会额外生虚函数和虚函数偏移，这些虚函数对应使用虚继承的父类<br>添加这两项是为了计算出父类的虚表指针，这样就有了所有父类的虚表指针，在使用多态的时候直接找子类和父类共有的虚函数，继承自其他父类的虚函数是访问不到的  </p>
+<p>构造标记：当子类实例化的时候按照之前的规则会调用父类的构造函数，这会多次调用祖父类的构造函数。为了防止这样的情况，子类使用构造函数的时候，传入了一个构造标记。在添加标记之后，一旦识别到这个标记就会跳过重复调用的祖父类构造函数<br>但是析构函数就没有这样加东西，还是将祖父类放到最后进行析构</p>
 
         </div>
         <div class="article-tags tags">
+            
+                <a class="tag-link" href="/tags/disassemble/" rel="tag">disassemble</a>
             
         </div>
     </section>
@@ -217,7 +233,7 @@
     <script>
       var disqus_shortname = 'ic3-cr3am';
       
-      var disqus_url = 'http://yoursite.com/2020/07/21/java-unserialize/';
+      var disqus_url = 'http://yoursite.com/2020/07/30/disassemble3/';
       
       (function () {
         var dsq = document.createElement('script');

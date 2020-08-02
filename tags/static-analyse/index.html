@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     
-    <title>Tag: reverse | Hamster</title>
+    <title>Tag: static_analyse | Hamster</title>
     <meta name="description" content="A minimal hexo theme."/>
     <meta name="keywords" content="hexo,theme,ctf,web"/>
     <meta name="HandheldFriendly" content="True"/>
@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta property="og:type" content="website">
 <meta property="og:title" content="Hamster">
-<meta property="og:url" content="http://yoursite.com/tags/reverse/index.html">
+<meta property="og:url" content="http://yoursite.com/tags/static-analyse/index.html">
 <meta property="og:site_name" content="Hamster">
 <meta property="og:locale" content="ch">
 <meta property="article:author" content="IC3-CR3AM">
@@ -67,7 +67,7 @@
     <main id="main" role="main">
         
   <section class="page-header tag">
-    <h1>- <span>reverse</span> -</h1>
+    <h1>- <span>static_analyse</span> -</h1>
   </section>
 
 
@@ -81,53 +81,49 @@
 
     
         <h2 class="title">
-            <a href="/2020/07/20/reverse-c/">
-                c++反汇编小结
+            <a href="/2020/07/22/static-analyse/">
+                静态分析学习笔记
             </a>
         </h2>
     
     <time>
-        Jul 20, 2020
+        Jul 22, 2020
     </time>
     <section class="content">
-        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/48449367_p0.jpg" class>
+        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png" class>
 
-<h1><span id="前言">前言</span></h1><p>有些太基础的东西就没不记录了。仅作为查漏补缺</p>
-<h2><span id="基础数据类型">基础数据类型</span></h2><p>略，和c基本没区别。  </p>
-<h3><span id="引用">引用</span></h3><p>稍微讲一下<strong>引用</strong>，很多资料写的不是很清楚  </p>
-<p>c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。<br>创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。</p>
-<h3><span id="常量">常量</span></h3><p>由#define修饰后会被编译为立即数寻址。<br>由const修饰的变量本质上还是变量，在编译期间检测是否有修改过。因为本身还是变量，所以通过指针的方式获取，并且强制类型转换就可以修改。<br>那么被const修饰的变量本身也不会像真常量一样放在常量数据区，而是通过作用域决定在内存中的位置。</p>
-<h2><span id="启动函数">启动函数</span></h2><p>一般由mainCRTStartUp函数作为从kernal32出来的程序入口（入口函数名可能会变，总共有四种）。<br>主要负责堆内存的初始化，main函数所需要的三个参数的初始化，分别为argc，argv，env。</p>
-<p>PS：在OllyDbg中需要手动找main，可以一起寻找进入main函数前的一些初始化函数，比如getCommandLineA，再顺着往下找，看到三次参数压栈就知道马上要进入main了。</p>
-<h2><span id="函数调用方式">函数调用方式</span></h2><p>vc++下有三种调用方式_cdecl,_stdcall,_fastcall</p>
-<pre><code>_cdecl：是默认调用方式，调用者负责平衡栈，不定参数的函数可以使用  
-_stdcall：被调用者平衡栈，不定参数的函数无法使用  
-_fastcall：比_stdcall多了一个用寄存器来传递参数  </code></pre><p>PS，在优化后，可能出现集中在一起进行一次栈平衡的操作</p>
-<h3><span id="对形参实参的汇编新解">对形参/实参的汇编新解</span></h3><p>新生学c的时候总有个问题，为什么在写第一个交换变量函数里不能用形参，而是要用指针<br>其实汇编内部是用栈传参，是将原本寄存器或者内存的数据拷贝一份进行压栈，这个时候栈桢内部是个数据备份<br>所以要通过传指针，间接的方式来访问真实的原数据</p>
-<h3><span id="不定长参数函数">不定长参数函数</span></h3><p>定义</p>
-<pre><code>至少一个参数  
-每个参数定长，为dword型  
-需要在某一参数中定下总长度或者结束符</code></pre><p>这样只要访问到第一个参数的地址，除了double型的，都能通过地址+4来获取下一个地址<br>另，像printf函数，是在第一个参数就决定了参数列表的长度，通过判断%的个数</p>
-<h3><span id="函数方面小结基础知识点">函数方面小结【基础知识点】</span></h3><pre><code>1.参数传递：通过栈或者寄存器传参  
-2.函数调用：也就是call调用，这个时候会将返回地址压栈，也就会esp+4  
-3.保存栈底：在形成栈桢的时刻，先将ebp压栈，再更新ebp为新的esp地址  
-4.栈平衡：因为不定长参数列表，所以函数自身无法确定所使用多少栈空间，所以用ret指针进行栈平衡（非__cdecl下）；__cdecl下是直接调整esp  
-5.ret指令：一般是近跳转，可以解释为pop ip；但是有ret 4的写法，含义为，pop ip；add esp 4；  </code></pre><h2><span id="变量">变量</span></h2><h3><span id="全局和局部变量">全局和局部变量</span></h3><p>全局变量是在链接的时候直接写入PE文件，存在PE的可读写节中<br>在程序运行到main之前，全局变量就已经加载完毕<br>局部变量的生命周期，在超出作用域之后，会被栈平衡的时候释放空间<br>上面混用了生命周期和作用域，是因为对于局部变量在花括号内，作用域和生命周期是一致的<br>局部变量无法访问作用域外的空间，是因为编译器会在编译前进行检查，来限制对外访问  </p>
-<h4><span id="访问方式">访问方式</span></h4><p>局部变量通过栈指针间接访问<br>而全局变量访问是通过在编译期间算好的具体地址，直接通过立即数访问</p>
-<p>冷知识：全局变量在内存中是从低地址到高地址，和局部变量相反</p>
-<h3><span id="局部静态变量">局部静态变量</span></h3><p>全局静态变量和全局变量在汇编层面上是完全一致的，只是在编译期间，编译器限制全局静态变量不能访问其他文件<br>局部静态变量也是和全局变量存在同一个节里，生命周期也和全局变量一致，只是使用的时候对它进行赋值。<br>规定了只能一次初始化，但是对于局部静态变量都是赋值，所以编译器会生成一个标志比特，置为一则是代表已经初始化过，避免多次初始化<br>然后通过名称粉碎法的方式来限制它的作用域，将原有的名称改成<strong>名称+作用域+类型</strong>等  </p>
-<p>PS：c++的函数重载也是用的同一种技术</p>
-<h3><span id="堆变量">堆变量</span></h3><h4><span id="malloc和new的区别">malloc和new的区别</span></h4><p>malloc通常需要申请划分一块新的内存，而new直接使用已经申请好的空闲块</p>
-<p>PS：debug模式下，堆数据空间内的gap前后四个字节标为0xFD，用来检测越界</p>
-<h2><span id="指针">指针</span></h2><p>冷知识：复制字符串，一次是复制四个字节，因为用寄存器中转</p>
-<p>待续。。。</p>
-
+<h1><span id="一些话">一些话</span></h1><p>南大的软件分析课程最近放在b站上了，虽然只有一半的课程<br>老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看<br>就我个人的理解，这门课是针对逆向的学术扩展<br>目前学习了两节课，再接再厉</p>
+<h2><span id="ir">IR</span></h2><p>静态分析是基于IR的，也就是中间语言进行分析的<br>选择IR而不是AST的理由：</p>
+<pre><code>IR更加“低级”  
+通常不依赖语言  
+简洁，没什么冗余信息  
+包含控制流信息  </code></pre><p>虽然有些也能在ast上分析</p>
+<h3><span id="3ac三地址码">3AC——三地址码</span></h3><p>定义：在每一条语句里，等号右边只能由一个操作符。以及一句语句里最多只有三个地址<br>以下一些基本的定义，</p>
+<pre><code>bop：二元操作  
+uop：一元操作  
+L:标签  
+rop：关系操作，例如大于等于</code></pre><h3><span id="ssa提及">SSA（提及）</span></h3><p>Static Single Assignment<br>定义：</p>
+<pre><code>给每个定义一个新的名字  
+并且这个名字在后续语句里也会用到
+每个变量有且只有一个定义</code></pre><p>对于合并操作有个专门的函数，叫做（Phi-function）<br>优点：对上下文的顺序，可以将控制流信息通过独立的名字，根据上下文进行推断出；定义和使用非常准确<br>缺点：引入太多变量和phi-funtion，会导致效率大大降低</p>
+<h3><span id="控制流分析">控制流分析</span></h3><p>这个分析经常被用来生成控制流图<br>控制流图又是控制分析的基础，一旦生成了图就可以用一些图论的结论，分析它的前驱后继的关系也相对容易<br>看下图，每个节点既可以用单独的三地址码语句，也可以用BB（Basic Block）<br><img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/3AC.PNG" alt></p>
+<h3><span id="basic-blocksbb基本块">Basic Blocks（BB，基本块）</span></h3><p>基本块，将控制流按照一定的规则进行分割，将代码分成一块块，每一块都是一个BB，将所有的BB根据控制流连线就成了CFG——控制流图<br>定义：每一个块只有一个入口一个出口，本且将每一块填充的连续代码尽可能地多<br>BB的生成算法：  </p>
+<pre><code>1.找到所有BB的入口，
+    第一条指令
+    所有的跳转目标
+    跳转语句的下一条
+2.建立基本块，
+    将每一个入口下后续的语句纳入BB，直到碰到下一个入口</code></pre><p>CFG生成算法：</p>
+<pre><code>1.块末尾的跳转到新块的头
+2.两个紧接着，上下会连续执行的块
+3.将原本三地址码的跳转标签换成BB的标签
+4.最后，加上入口和出口模块，主要是用来方便分析程序进行操作</code></pre>
 
         
 
         
             <div class="tags">
-                <a class="tag-link" href="/tags/reverse/" rel="tag">reverse</a>
+                <a class="tag-link" href="/tags/static-analyse/" rel="tag">static_analyse</a>
             </div>
         
 

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     
-    <title>Archives: 2020 | Hamster</title>
+    <title>Tag: disassemble | Hamster</title>
     <meta name="description" content="A minimal hexo theme."/>
     <meta name="keywords" content="hexo,theme,ctf,web"/>
     <meta name="HandheldFriendly" content="True"/>
@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <meta property="og:type" content="website">
 <meta property="og:title" content="Hamster">
-<meta property="og:url" content="http://yoursite.com/archives/2020/index.html">
+<meta property="og:url" content="http://yoursite.com/tags/disassemble/index.html">
 <meta property="og:site_name" content="Hamster">
 <meta property="og:locale" content="ch">
 <meta property="article:author" content="IC3-CR3AM">
@@ -66,12 +66,11 @@
 
     <main id="main" role="main">
         
-    
-
-
-  <section class="page-header archive">
-    <h1>- <span>2020</span> -</h1>
+  <section class="page-header tag">
+    <h1>- <span>disassemble</span> -</h1>
   </section>
+
+
 
 
 
@@ -177,59 +176,6 @@
 
     
         <h2 class="title">
-            <a href="/2020/07/22/static-analyse/">
-                静态分析学习笔记
-            </a>
-        </h2>
-    
-    <time>
-        Jul 22, 2020
-    </time>
-    <section class="content">
-        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png" class>
-
-<h1><span id="一些话">一些话</span></h1><p>南大的软件分析课程最近放在b站上了，虽然只有一半的课程<br>老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看<br>就我个人的理解，这门课是针对逆向的学术扩展<br>目前学习了两节课，再接再厉</p>
-<h2><span id="ir">IR</span></h2><p>静态分析是基于IR的，也就是中间语言进行分析的<br>选择IR而不是AST的理由：</p>
-<pre><code>IR更加“低级”  
-通常不依赖语言  
-简洁，没什么冗余信息  
-包含控制流信息  </code></pre><p>虽然有些也能在ast上分析</p>
-<h3><span id="3ac三地址码">3AC——三地址码</span></h3><p>定义：在每一条语句里，等号右边只能由一个操作符。以及一句语句里最多只有三个地址<br>以下一些基本的定义，</p>
-<pre><code>bop：二元操作  
-uop：一元操作  
-L:标签  
-rop：关系操作，例如大于等于</code></pre><h3><span id="ssa提及">SSA（提及）</span></h3><p>Static Single Assignment<br>定义：</p>
-<pre><code>给每个定义一个新的名字  
-并且这个名字在后续语句里也会用到
-每个变量有且只有一个定义</code></pre><p>对于合并操作有个专门的函数，叫做（Phi-function）<br>优点：对上下文的顺序，可以将控制流信息通过独立的名字，根据上下文进行推断出；定义和使用非常准确<br>缺点：引入太多变量和phi-funtion，会导致效率大大降低</p>
-<h3><span id="控制流分析">控制流分析</span></h3><p>这个分析经常被用来生成控制流图<br>控制流图又是控制分析的基础，一旦生成了图就可以用一些图论的结论，分析它的前驱后继的关系也相对容易<br>看下图，每个节点既可以用单独的三地址码语句，也可以用BB（Basic Block）<br><img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/3AC.PNG" alt></p>
-<h3><span id="basic-blocksbb基本块">Basic Blocks（BB，基本块）</span></h3><p>基本块，将控制流按照一定的规则进行分割，将代码分成一块块，每一块都是一个BB，将所有的BB根据控制流连线就成了CFG——控制流图<br>定义：每一个块只有一个入口一个出口，本且将每一块填充的连续代码尽可能地多<br>BB的生成算法：  </p>
-<pre><code>1.找到所有BB的入口，
-    第一条指令
-    所有的跳转目标
-    跳转语句的下一条
-2.建立基本块，
-    将每一个入口下后续的语句纳入BB，直到碰到下一个入口</code></pre><p>CFG生成算法：</p>
-<pre><code>1.块末尾的跳转到新块的头
-2.两个紧接着，上下会连续执行的块
-3.将原本三地址码的跳转标签换成BB的标签
-4.最后，加上入口和出口模块，主要是用来方便分析程序进行操作</code></pre>
-
-        
-
-        
-            <div class="tags">
-                <a class="tag-link" href="/tags/static-analyse/" rel="tag">static_analyse</a>
-            </div>
-        
-
-    </section>
-</article>
-  
-    <article class="post ">
-
-    
-        <h2 class="title">
             <a href="/2020/07/20/disassemble/">
                 c++反汇编小结（1）
             </a>
@@ -281,74 +227,7 @@ _fastcall：比_stdcall多了一个用寄存器来传递参数  </code></pre><p>
     </section>
 </article>
   
-    <article class="post ">
-
-    
-        <h2 class="title">
-            <a href="/2020/07/20/preface/">
-                前言
-            </a>
-        </h2>
-    
-    <time>
-        Jul 20, 2020
-    </time>
-    <section class="content">
-        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/13461444_p0_meitu_3.jpg" class>
-
-<h1><span id="前言">前言</span></h1><p>本人萌新，入门不久，各位看官海涵</p>
-<p>写这个博客的目的有四，<br>其一、整理渗透和ctf-web的基础知识点（将持续更新）<br>其二、用博客作为自己的cheatsheet<br>其三、为日常打的比赛做一个记录<br>其四、写毕业论文看论文做个记录</p>
-<p>有问题欢迎留言</p>
-
-
-        
-
-        
-            <div class="tags">
-                <a class="tag-link" href="/tags/preface/" rel="tag">preface</a>
-            </div>
-        
-
-    </section>
-</article>
-  
-    <article class="post ">
-
-    
-        <h2 class="title">
-            <a href="/2020/07/15/xss1/">
-                xss
-            </a>
-        </h2>
-    
-    <time>
-        Jul 15, 2020
-    </time>
-    <section class="content">
-        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/68192046_p0.jpg" class>
-
-<h1><span id="xxs基础">xxs基础</span></h1><p>刚刚写了一点才发现飞猪队伍出的《CTF竞赛训练营》写的比我全多了，打基础的同学可以看看那本书，这里仅作为一点补充和个人感受的些许随笔。</p>
-<h2><span id="简介">简介</span></h2><p>网上的标准定义就不讲了，讲讲自己的一些理解<br>xss本质是因为不安全的浏览器返回内容，被浏览器执行所导致的一系列安全问题，所以xss这个漏洞本身只能导致浏览器的权限被拿（如果不算上后续利用的话）</p>
-<h2><span id="xxs基础">xxs基础</span></h2><h3><span id="反射型">反射型</span></h3><h3><span id="存储型">存储型</span></h3><h3><span id="dom型">DOM型</span></h3><h2><span id="xss绕过滤">xss绕过滤</span></h2><h3><span id="绕双引号和尖括号转译">绕双引号和尖括号转译</span></h3><p>如果该字符集被指定为UTF-7，可以用utf-7绕过</p>
-<hr>
-<h1><span id="xss绕csp">xss绕csp</span></h1><h2><span id="csp简介">csp简介</span></h2><p>内容安全策略(CSP)，本质是一个白名单，阻止非白名单的js脚本执行。</p>
-<h3><span id="svg绕csp">SVG绕csp</span></h3><p>SVG是一种矢量图格式，能够被浏览器动态渲染。</p>
-<p>首先，svg可以使用</p>
-
-
-        
-
-        
-            <div class="tags">
-                <a class="tag-link" href="/tags/xss/" rel="tag">xss</a>
-            </div>
-        
-
-    </section>
-</article>
-  
 </section>
-
 
 
         <script>setLoadingBarProgress(60);</script>
