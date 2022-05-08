@@ -1,316 +1,122 @@
 <!DOCTYPE html>
 <html lang="zh">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="renderer" content="webkit">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>
+        Hexo
+    </title>
     
-    <title>c++反汇编小结（2） | Hamster</title>
-    <meta name="description" content="A minimal hexo theme."/>
-    <meta name="keywords" content="hexo,theme,ctf,web"/>
-    <meta name="HandheldFriendly" content="True"/>
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="google-site-verification" content=""/>
-    <meta name="baidu-site-verification" content=""/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="指针冷知识：复制字符串，一次是复制四个字节，因为用寄存器中转   数组细碎的小知识：数组在函数内都是以指针变量的形式存储，所以用sizeof只能返回指针长度的四字节，应该用strLen函数来测量数组长度多维数组的指针+1偏移是根据数组长度来的，而不是单单根据数据类型数组作为函数的返回值，在函数退出后数组内数据不稳定，可能被新开的栈所覆盖   寻址方式分为下标寻址和指针寻址因为数组名是地址，可以">
-<meta property="og:type" content="article">
-<meta property="og:title" content="c++反汇编小结（2）">
-<meta property="og:url" content="http://yoursite.com/2020/07/29/disassemble2/index.html">
-<meta property="og:site_name" content="Hamster">
-<meta property="og:description" content="指针冷知识：复制字符串，一次是复制四个字节，因为用寄存器中转   数组细碎的小知识：数组在函数内都是以指针变量的形式存储，所以用sizeof只能返回指针长度的四字节，应该用strLen函数来测量数组长度多维数组的指针+1偏移是根据数组长度来的，而不是单单根据数据类型数组作为函数的返回值，在函数退出后数组内数据不稳定，可能被新开的栈所覆盖   寻址方式分为下标寻址和指针寻址因为数组名是地址，可以">
-<meta property="og:locale" content="ch">
-<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p2.jpg">
-<meta property="article:published_time" content="2020-07-29T05:51:00.000Z">
-<meta property="article:modified_time" content="2020-07-30T11:42:08.772Z">
-<meta property="article:author" content="IC3-CR3AM">
-<meta property="article:tag" content="disassemble">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p2.jpg">
-    
-
-    <!-- Favicon -->
-    
-
-    <!-- Font -->
-    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Roboto:300,400,700" rel="stylesheet">
+<link rel="stylesheet" href="/libs/highlight/styles/monokai-sublime.css">
 
     
-<link rel="stylesheet" href="/style.css">
-
-    <script>
-      function setLoadingBarProgress(num) {
-        document.getElementById('loading-bar').style.width = num + "%";
-      }
-    </script>
+<link rel="stylesheet" href="/libs/font-awesome/css/font-awesome.min.css">
 
     
-<meta name="generator" content="Hexo 4.2.1"></head>
+<link rel="stylesheet" href="/css/style.css">
 
-<body>
+<meta name="generator" content="Hexo 6.1.0"></head>
 
-<div id="loading-bar-wrapper">
-  <div id="loading-bar"></div>
-</div>
-
-<script>setLoadingBarProgress(20)</script>
-
-<div id="site-wrapper">
-
-    <header id="header">
-    <div id="header-wrapper" class="clearfix">
-        <a id="logo" href="/">
-            <img src="/img/logo.png"/>
-            <span id="site-desc">
-                delicious
-            </span>
-        </a>
-        <button id="site-nav-switch">
-            <span class="icon icon-menu"></span>
-        </button>
-    </div>
-</header>
-    <script>setLoadingBarProgress(40);</script>
-
-    <main id="main" role="main">
-        <article id="post-disassemble2"
-         class="post article white-box article-type-post"
-         itemscope itemprop="blogPost">
-    <h2 class="title">
-        <a href="/2020/07/29/disassemble2/">
+<body id="bodyx">
+    <div class="hd posts">
+    <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
+    <div class="post-title">
+        <p>
             c++反汇编小结（2）
-        </a>
-    </h2>
-    <time>
-        Jul 29, 2020
-    </time>
-    <section class="content">
-        <div class="article-entry" itemprop="articleBody">
-            <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p2.jpg" class>
+        </p>
+        <hr>
+    </div>
+    <div class="post-content">
+        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p2.jpg" class="">
 
-<h2><span id="指针">指针</span></h2><p>冷知识：复制字符串，一次是复制四个字节，因为用寄存器中转  </p>
-<h3><span id="数组">数组</span></h3><p>细碎的小知识：数组在函数内都是以指针变量的形式存储，所以用sizeof只能返回指针长度的四字节，应该用strLen函数来测量数组长度<br>多维数组的指针+1偏移是根据数组长度来的，而不是单单根据数据类型<br><strong>数组作为函数的返回值</strong>，在函数退出后数组内数据不稳定，可能被新开的栈所覆盖  </p>
-<h3><span id="寻址方式">寻址方式</span></h3><p>分为下标寻址和指针寻址<br>因为数组名是地址，可以直接找到数组，再通过类型和大小，编译器就可以直接计算出数据的位置（下标为常量）<br>如果下标为变量就只能先将地址偏移到数组首地址，再根据变量做偏移<br>下标寻址即使是用变量和表达式依然会比指针寻址快，因为指针寻址是两次间接寻址，需要先找到指针，再找到真实的数据<br>而且用常量表达式的下标寻址在编译的时候就已经用常量折叠提前计算好了偏移  </p>
-<h3><span id="函数指针">函数指针</span></h3><p>函数指针和函数调用的区别仅仅在于，函数调用是直接调用，直接跳转到函数首地址上，而函数指针需要先从指针中找到函数地址，是间接调用<br>并且编译器会检查，不允许对函数指针进行一些加法减法的无意义操作</p>
-<h2><span id="结构体和类">结构体和类</span></h2><p>在C++的反汇编之后，结构体和类没有任何区别</p>
-<h3><span id="对象的内存布局">对象的内存布局</span></h3><pre><code>空类：在没有数据成员的情况下，类也需要实例化，所以仍会被分配一字节的空间用于实例化
+<h2 id="指针"><a href="#指针" class="headerlink" title="指针"></a>指针</h2><p>冷知识：复制字符串，一次是复制四个字节，因为用寄存器中转  </p>
+<h3 id="数组"><a href="#数组" class="headerlink" title="数组"></a>数组</h3><p>细碎的小知识：数组在函数内都是以指针变量的形式存储，所以用sizeof只能返回指针长度的四字节，应该用strLen函数来测量数组长度<br>多维数组的指针+1偏移是根据数组长度来的，而不是单单根据数据类型<br><strong>数组作为函数的返回值</strong>，在函数退出后数组内数据不稳定，可能被新开的栈所覆盖  </p>
+<h3 id="寻址方式"><a href="#寻址方式" class="headerlink" title="寻址方式"></a>寻址方式</h3><p>分为下标寻址和指针寻址<br>因为数组名是地址，可以直接找到数组，再通过类型和大小，编译器就可以直接计算出数据的位置（下标为常量）<br>如果下标为变量就只能先将地址偏移到数组首地址，再根据变量做偏移<br>下标寻址即使是用变量和表达式依然会比指针寻址快，因为指针寻址是两次间接寻址，需要先找到指针，再找到真实的数据<br>而且用常量表达式的下标寻址在编译的时候就已经用常量折叠提前计算好了偏移  </p>
+<h3 id="函数指针"><a href="#函数指针" class="headerlink" title="函数指针"></a>函数指针</h3><p>函数指针和函数调用的区别仅仅在于，函数调用是直接调用，直接跳转到函数首地址上，而函数指针需要先从指针中找到函数地址，是间接调用<br>并且编译器会检查，不允许对函数指针进行一些加法减法的无意义操作</p>
+<h2 id="结构体和类"><a href="#结构体和类" class="headerlink" title="结构体和类"></a>结构体和类</h2><p>在C++的反汇编之后，结构体和类没有任何区别</p>
+<h3 id="对象的内存布局"><a href="#对象的内存布局" class="headerlink" title="对象的内存布局"></a>对象的内存布局</h3><pre><code>空类：在没有数据成员的情况下，类也需要实例化，所以仍会被分配一字节的空间用于实例化
 内存对齐：类成员可能因为数据类型不一致而需要进行内存对齐，所以类的实际大小并不能直接通过数据类型算出，还得根据默认对齐长度来算  
-静态数据成员：和静态局部变量类似，并不存储在类中，而是和全局变量保存在一起</code></pre><h3><span id="this指针">this指针</span></h3><p>在调用成员函数的时候编译器会将对象首地址保存进ecx，这就是this指针，之后访问成员变量都是通过this来访问的，就像python里都是显示传入this，而在C++中都是隐藏的<br>这种调用方式称为thiscall，特点就是不用栈顶传参，而用ecx，调用约定类似于__stdcall是被调用方进行栈平衡  </p>
-<h3><span id="静态数据成员">静态数据成员</span></h3><p>比较难以识别，在汇编层面和全局变量相似，访问也不需要this指针，只能考猜，看这个变量是不是被多个同一个类的对象访问</p>
-<h3><span id="对象作为函数参数">对象作为函数参数</span></h3><p>对象作为参数传递的时候会复制一份数据作为形参（也就是会生成一个临时的对象出来，该对象有时候会调用拷贝构造函数），会复制每一个成员变量，由于没有编写拷贝构造函数，编译器调用浅拷贝<br>如果有成员变量是数组，或者字符串，会复制一份数组指针给形参，也就是现在有两个数组指针指向了同一块堆内存<br>一旦函数执行完成便会调用析构函数，将指针所指向的堆内存释放，也就是给这块内存标上特殊的标记，如果这时候原对象访问这块数据变会报错  </p>
+静态数据成员：和静态局部变量类似，并不存储在类中，而是和全局变量保存在一起
+</code></pre>
+<h3 id="this指针"><a href="#this指针" class="headerlink" title="this指针"></a>this指针</h3><p>在调用成员函数的时候编译器会将对象首地址保存进ecx，这就是this指针，之后访问成员变量都是通过this来访问的，就像python里都是显示传入this，而在C++中都是隐藏的<br>这种调用方式称为thiscall，特点就是不用栈顶传参，而用ecx，调用约定类似于__stdcall是被调用方进行栈平衡  </p>
+<h3 id="静态数据成员"><a href="#静态数据成员" class="headerlink" title="静态数据成员"></a>静态数据成员</h3><p>比较难以识别，在汇编层面和全局变量相似，访问也不需要this指针，只能考猜，看这个变量是不是被多个同一个类的对象访问</p>
+<h3 id="对象作为函数参数"><a href="#对象作为函数参数" class="headerlink" title="对象作为函数参数"></a>对象作为函数参数</h3><p>对象作为参数传递的时候会复制一份数据作为形参（也就是会生成一个临时的对象出来，该对象有时候会调用拷贝构造函数），会复制每一个成员变量，由于没有编写拷贝构造函数，编译器调用浅拷贝<br>如果有成员变量是数组，或者字符串，会复制一份数组指针给形参，也就是现在有两个数组指针指向了同一块堆内存<br>一旦函数执行完成便会调用析构函数，将指针所指向的堆内存释放，也就是给这块内存标上特殊的标记，如果这时候原对象访问这块数据变会报错  </p>
 <p>两种解决方案，深拷贝和设置引用计数  </p>
 <pre><code>深拷贝：在复制的时候动用拷贝构造函数，把对象的成员变量也复制一份，这样函数内部就有一个全新的对象，退出函数时销毁的也是这个新生成的对象
-设置引用计数：同样是进入拷贝构造函数，但是这时候不再复制对象，而是对目前的引用计数，在删除的时候检测目前的引用数量是否为0，没有的话就减1，直到引用计数为0之时，释放掉申请资源</code></pre><p>另一个问题，对象复制给形参，那么存储在哪里呢？答案是都存在栈空间内  </p>
-<h3><span id="对象作为返回值">对象作为返回值</span></h3><p>通常的数据类型返回走的是寄存器eax<br>但是对于对象显然是不行的，c++的操作是调用方在进入函数前就已经开辟栈桢，在调用函数的时候将栈桢内的对象地址赋值给函数<br>在函数调用结束的时候将对象成员变量通过之前的地址存入该临时对象内</p>
-<h2><span id="构造函数和析构函数">构造函数和析构函数</span></h2><h3><span id="构造函数">构造函数</span></h3><h4><span id="局部对象">局部对象</span></h4><p>对象生成时调用构造函数<br>此时的构造函数的特征是该对象调用的第一个函数，且会返回一个this指针  </p>
-<h4><span id="堆对象">堆对象</span></h4><p>指的是是用了new的语句，在生成完对象，紧接着就调用构造函数<br>c语言里的malloc并不会出发构造函数，它不属于运算符，也无法进行运算符重载</p>
-<h4><span id="参数对象">参数对象</span></h4><p>当对象为函数为参数时，会触发拷贝构造函数（只有一个参数，为对象的引用）<br>如果没有定义拷贝构造函数，编译器会自动调用默认拷贝构造函数，这个拷贝构造函数用的是浅拷贝（浅拷贝只会将成员变量的数据直接复制一份，如果是一些间接访问的需要自己定义一个深拷贝构造函数）  </p>
-<h4><span id="返回对象">返回对象</span></h4><p>类似于参数对象,但是两者的拷贝构造函数调用时机不一样<br>在函数返回的时候调用  </p>
-<h4><span id="全局对象和静态对象">全局对象和静态对象</span></h4><p>程序所有全局对象会在同一个点上调用构造函数进行初始化<br>这个调用过程在main之前，在vc6中是在_cinit中被调用，由编译器提供的构造代理函数完成全局构造函数的调用</p>
-<h3><span id="编译器提供默认构造函数的情况">编译器提供默认构造函数的情况</span></h3><p>不是所有对象都会被提供默认构造函数<br>有两种情况，</p>
+设置引用计数：同样是进入拷贝构造函数，但是这时候不再复制对象，而是对目前的引用计数，在删除的时候检测目前的引用数量是否为0，没有的话就减1，直到引用计数为0之时，释放掉申请资源
+</code></pre>
+<p>另一个问题，对象复制给形参，那么存储在哪里呢？答案是都存在栈空间内  </p>
+<h3 id="对象作为返回值"><a href="#对象作为返回值" class="headerlink" title="对象作为返回值"></a>对象作为返回值</h3><p>通常的数据类型返回走的是寄存器eax<br>但是对于对象显然是不行的，c++的操作是调用方在进入函数前就已经开辟栈桢，在调用函数的时候将栈桢内的对象地址赋值给函数<br>在函数调用结束的时候将对象成员变量通过之前的地址存入该临时对象内</p>
+<h2 id="构造函数和析构函数"><a href="#构造函数和析构函数" class="headerlink" title="构造函数和析构函数"></a>构造函数和析构函数</h2><h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><h4 id="局部对象"><a href="#局部对象" class="headerlink" title="局部对象"></a>局部对象</h4><p>对象生成时调用构造函数<br>此时的构造函数的特征是该对象调用的第一个函数，且会返回一个this指针  </p>
+<h4 id="堆对象"><a href="#堆对象" class="headerlink" title="堆对象"></a>堆对象</h4><p>指的是是用了new的语句，在生成完对象，紧接着就调用构造函数<br>c语言里的malloc并不会出发构造函数，它不属于运算符，也无法进行运算符重载</p>
+<h4 id="参数对象"><a href="#参数对象" class="headerlink" title="参数对象"></a>参数对象</h4><p>当对象为函数为参数时，会触发拷贝构造函数（只有一个参数，为对象的引用）<br>如果没有定义拷贝构造函数，编译器会自动调用默认拷贝构造函数，这个拷贝构造函数用的是浅拷贝（浅拷贝只会将成员变量的数据直接复制一份，如果是一些间接访问的需要自己定义一个深拷贝构造函数）  </p>
+<h4 id="返回对象"><a href="#返回对象" class="headerlink" title="返回对象"></a>返回对象</h4><p>类似于参数对象,但是两者的拷贝构造函数调用时机不一样<br>在函数返回的时候调用  </p>
+<h4 id="全局对象和静态对象"><a href="#全局对象和静态对象" class="headerlink" title="全局对象和静态对象"></a>全局对象和静态对象</h4><p>程序所有全局对象会在同一个点上调用构造函数进行初始化<br>这个调用过程在main之前，在vc6中是在_cinit中被调用，由编译器提供的构造代理函数完成全局构造函数的调用</p>
+<h3 id="编译器提供默认构造函数的情况"><a href="#编译器提供默认构造函数的情况" class="headerlink" title="编译器提供默认构造函数的情况"></a>编译器提供默认构造函数的情况</h3><p>不是所有对象都会被提供默认构造函数<br>有两种情况，</p>
 <pre><code>本类和本类成员或者父类中存在虚函数（虚表的初始化需要构造函数来完成）  
-或者本类为派生类</code></pre><h3><span id="何时调用析构函数">何时调用析构函数</span></h3><h4><span id="局部对象">局部对象</span></h4><p>作用域结束前调用  </p>
-<h4><span id="堆对象">堆对象</span></h4><p>堆空间释放前调用<br>也就是程序员写的delete处，但是堆对象的处理方式比较特殊，不是直接调用析构函数而是调用代理析构函数，其中一个原因是有可能不止一个对象需要释放，例如释放一个对象数组<br>另，free不会触发析构函数</p>
-<h4><span id="参数对象和返回对象">参数对象和返回对象</span></h4><p>参数对象，在函数返回前调用<br>返回对象，如果返回后没有使用，在函数返回后调用；如果有对象引用，则根据引用的对象的生命周期来</p>
-<h3><span id="全局对象和静态对象">全局对象和静态对象</span></h3><p>在main函数结束之后，在exit函数中，由doexit函数负责调用析构函数</p>
+或者本类为派生类
+</code></pre>
+<h3 id="何时调用析构函数"><a href="#何时调用析构函数" class="headerlink" title="何时调用析构函数"></a>何时调用析构函数</h3><h4 id="局部对象-1"><a href="#局部对象-1" class="headerlink" title="局部对象"></a>局部对象</h4><p>作用域结束前调用  </p>
+<h4 id="堆对象-1"><a href="#堆对象-1" class="headerlink" title="堆对象"></a>堆对象</h4><p>堆空间释放前调用<br>也就是程序员写的delete处，但是堆对象的处理方式比较特殊，不是直接调用析构函数而是调用代理析构函数，其中一个原因是有可能不止一个对象需要释放，例如释放一个对象数组<br>另，free不会触发析构函数</p>
+<h4 id="参数对象和返回对象"><a href="#参数对象和返回对象" class="headerlink" title="参数对象和返回对象"></a>参数对象和返回对象</h4><p>参数对象，在函数返回前调用<br>返回对象，如果返回后没有使用，在函数返回后调用；如果有对象引用，则根据引用的对象的生命周期来</p>
+<h3 id="全局对象和静态对象-1"><a href="#全局对象和静态对象-1" class="headerlink" title="全局对象和静态对象"></a>全局对象和静态对象</h3><p>在main函数结束之后，在exit函数中，由doexit函数负责调用析构函数</p>
 
-        </div>
-        <div class="article-tags tags">
-            
-                <a class="tag-link" href="/tags/disassemble/" rel="tag">disassemble</a>
-            
-        </div>
-    </section>
-</article>
-
-
-    <section id="comments">
-        <div id="disqus_thread"></div>
-    </section>
-
-
-
-
-        <script>setLoadingBarProgress(60);</script>
-    </main>
-
-    <footer id="footer" class="clearfix">
+    </div>
 
     
-
-    <div class="social-wrapper">
-        
-            
-                <a href="https://github.com/IC3-CR3AM" class="social github"
-                   target="_blank" rel="external">
-                    <span class="icon icon-github"></span>
-                </a>
-            
-        
-    </div>
-
-    <div class="theme-by">Theme <span class="codename">Memory</span> designed by <a href="https://artifact.me/"
-                                                                                    target="_blank">Art Chen</a>.
-    </div>
-    <div>&copy; <a href="/">Hamster</a></div>
-
-</footer>
-
-
-    <script>setLoadingBarProgress(80);</script>
-    <div class="overlay"></div>
 </div>
-
-<div class="site-sidebar" id="site-sidebar">
-
-    
-
-    <div class="sidebar-switch clearfix "
-         style="display: none">
-        <a class="dark-btn active" data-toggle="toc">
-            <span class="icon icon-list"></span>
-            <span class="text">Index</span>
-        </a>
-        <a class="dark-btn" data-toggle="bio">
-            <span class="icon icon-person"></span>
-            <span class="text">Bio</span>
-        </a>
-    </div>
-
-    <div class="site-toc "
-         style="display: none">
-        
-            <div class="no-index">No Index</div>
-        
-    </div>
-
-    <div class="site-bio show"
-         style="display: block">
-
-        <div class="about-me clearfix">
-            <div class="avatar">
-                <img src="/img/avatar.png"/>
-            </div>
-            <div class="info">
-                <a class="name dark-btn" href="/about">
-                    IC3-CR3AM
-                </a>
-            </div>
-            <div class="info">
-                <span class="item desc">
-                    
-                </span>
-            </div>
-        </div>
-
-        <div class="menu section">
-            <ul class="clearfix">
-                
-                    <li class="left">
-                        <a href="/about"
-                           onfocus="this.blur();"
-                           class="nav-about dark-btn block">
-                            About
-                        </a>
-                    </li>
-                
-                    <li class="right">
-                        <a href="/archives"
-                           onfocus="this.blur();"
-                           class="nav-archives dark-btn block">
-                            Archives
-                        </a>
-                    </li>
-                
-            </ul>
-        </div>
-
-    </div>
-
-    <div class="shortcuts">
-        <a href="#header" class="top window-nav dark-btn" id="go-top">
-            <span class="icon icon-chevron-thin-up"></span>
-        </a>
-        <a class="close dark-btn" id="sidebar-close">
-            <span class="icon icon-close"></span>
-        </a>
-        <a href="#footer" class="top window-nav dark-btn" id="go-bottom">
-            <span class="icon icon-chevron-thin-down"></span>
-        </a>
-    </div>
-
+    <div class="footer" id="footer">
+    <p>Copyright © 2020 <a class="flink" target="_blank" rel="noopener" href="https://hexo.io">Hexo</a>-<a class="flink" target="_blank" rel="noopener" href="https://github.com/sanjinhub/hexo-theme-geek">Geek</a>.
+        <label class="el-switch el-switch-green el-switch-sm" style="vertical-align: sub;">
+            <input type="checkbox" name="switch" id="update_style">
+            <span class="el-switch-style"></span>
+        </label>
+<!--         <script type="text/javascript">
+        var cnzz_protocol = (("https:" == document.location.protocol) ? "https://" : "http://");
+        document.write(unescape("%3Cspan id='cnzz_stat_icon_1278548644'%3E%3C/span%3E%3Cscript src='" + cnzz_protocol + "v1.cnzz.com/stat.php%3Fid%3D1278548644%26show%3Dpic1' type='text/javascript'%3E%3C/script%3E"));
+        </script> -->
+    </p>
 </div>
+<input type="hidden" id="web_style" value="black">
+<input type="hidden" id="valine_appid" value="CmCti21ooOOIzFOhEyFkFvR0-gzGzoHsz">
+<input type="hidden" id="valine_appKey" value="FqiyUqbg7McKN2eG0MCewupf">
+
+<script src="/libs/jquery.min.js"></script>
 
 
-    <script>
-      var disqus_shortname = 'ic3-cr3am';
-      
-      var disqus_url = 'http://yoursite.com/2020/07/29/disassemble2/';
-      
-      (function () {
-        var dsq = document.createElement('script');
-        dsq.type = 'text/javascript';
-        dsq.async = true;
-        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-      })();
-    </script>
+<script src="/libs/highlight/highlight.pack.js"></script>
 
+<script src='//cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js'></script>
 
+<script src="/js/js.js"></script>
 
+<style type="text/css">
+.v * {
+    color: #698fca;
+}
 
-<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-<script>window.jQuery || document.write('<script src="/js/jquery.min.js"><\/script>')</script>
+.v .vlist .vcard .vhead .vsys {
+    color: #3a3e4a;
+}
 
+.v .vlist .vcard .vh .vmeta .vat {
+    color: #638fd5;
+}
 
-<script src="/js/jquery.fitvids.js"></script>
+.v .vlist .vcard .vhead .vnick {
+    color: #6ba1ff;
+}
 
-<script>
-  var GOOGLE_CUSTOM_SEARCH_API_KEY = "";
-  var GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "";
-  var ALGOLIA_API_KEY = "";
-  var ALGOLIA_APP_ID = "";
-  var ALGOLIA_INDEX_NAME = "";
-  var AZURE_SERVICE_NAME = "";
-  var AZURE_INDEX_NAME = "";
-  var AZURE_QUERY_KEY = "";
-  var SEARCH_SERVICE = "";
-  var universalSearchConfig = {};
-  if (SEARCH_SERVICE === 'google') {
-    universalSearchConfig = {
-      searchService: SEARCH_SERVICE,
-      apiKey: GOOGLE_CUSTOM_SEARCH_API_KEY,
-      engineId: GOOGLE_CUSTOM_SEARCH_ENGINE_ID,
-      imagePath: "/img/"
-    };
-  } else if (SEARCH_SERVICE === 'algolia') {
-    universalSearchConfig = {
-      searchService: SEARCH_SERVICE,
-      apiKey: ALGOLIA_API_KEY,
-      appId: ALGOLIA_APP_ID,
-      indexName: ALGOLIA_INDEX_NAME,
-      imagePath: "/img/"
-    };
-  } else if (SEARCH_SERVICE === 'azure') {
-    universalSearchConfig = {
-      searchService: SEARCH_SERVICE,
-      serviceName: AZURE_SERVICE_NAME,
-      indexName: AZURE_INDEX_NAME,
-      apiKey: AZURE_QUERY_KEY,
-      imagePath: "/img/"
-    };
-  }
-</script>
+.v a {
+    color: #8696b1;
+}
 
-<script src="/js/app.js"></script>
-
-
-<script src="/js/search.js"></script>
-
-
-
-
-
-<script>setLoadingBarProgress(100);</script>
-
+.v .vlist .vcard .vhead .vnick:hover {
+    color: #669bfc;
+}
+</style>
 </body>
+
 </html>

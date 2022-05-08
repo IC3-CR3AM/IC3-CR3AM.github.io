@@ -24,24 +24,20 @@
     <a href="/index.html"><i class="fa fa-reply replay-btn" aria-hidden="true"></i></a>
     <div class="post-title">
         <p>
-            Hello World
+            xss
         </p>
         <hr>
     </div>
     <div class="post-content">
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+        <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/68192046_p0.jpg" class="">
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<h1 id="xxs基础"><a href="#xxs基础" class="headerlink" title="xxs基础"></a>xxs基础</h1><p>刚刚写了一点才发现飞猪队伍出的《CTF竞赛训练营》写的比我全多了，打基础的同学可以看看那本书，这里仅作为一点补充和个人感受的些许随笔。</p>
+<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>网上的标准定义就不讲了，讲讲自己的一些理解<br>xss本质是因为不安全的浏览器返回内容，被浏览器执行所导致的一系列安全问题，所以xss这个漏洞本身只能导致浏览器的权限被拿（如果不算上后续利用的话）</p>
+<h2 id="xxs基础-1"><a href="#xxs基础-1" class="headerlink" title="xxs基础"></a>xxs基础</h2><h3 id="反射型"><a href="#反射型" class="headerlink" title="反射型"></a>反射型</h3><h3 id="存储型"><a href="#存储型" class="headerlink" title="存储型"></a>存储型</h3><h3 id="DOM型"><a href="#DOM型" class="headerlink" title="DOM型"></a>DOM型</h3><h2 id="xss绕过滤"><a href="#xss绕过滤" class="headerlink" title="xss绕过滤"></a>xss绕过滤</h2><h3 id="绕双引号和尖括号转译"><a href="#绕双引号和尖括号转译" class="headerlink" title="绕双引号和尖括号转译"></a>绕双引号和尖括号转译</h3><p>如果该字符集被指定为UTF-7，可以用utf-7绕过</p>
+<hr>
+<h1 id="xss绕csp"><a href="#xss绕csp" class="headerlink" title="xss绕csp"></a>xss绕csp</h1><h2 id="csp简介"><a href="#csp简介" class="headerlink" title="csp简介"></a>csp简介</h2><p>内容安全策略(CSP)，本质是一个白名单，阻止非白名单的js脚本执行。</p>
+<h3 id="SVG绕csp"><a href="#SVG绕csp" class="headerlink" title="SVG绕csp"></a>SVG绕csp</h3><p>SVG是一种矢量图格式，能够被浏览器动态渲染。</p>
+<p>首先，svg可以使用</p>
 
     </div>
 
