@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    
+    <title>c++反汇编小结（1） | Hamster</title>
+    <meta name="description" content="A minimal hexo theme."/>
+    <meta name="keywords" content="hexo,theme,ctf,web"/>
+    <meta name="HandheldFriendly" content="True"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="google-site-verification" content=""/>
+    <meta name="baidu-site-verification" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="前言有些太基础的东西就没不记录了。仅作为查漏补缺 基础数据类型略，和c基本没区别。   引用稍微讲一下引用，很多资料写的不是很清楚   c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。 常量由#def">
+<meta property="og:type" content="article">
+<meta property="og:title" content="c++反汇编小结（1）">
+<meta property="og:url" content="http://yoursite.com/2020/07/20/disassemble/index.html">
+<meta property="og:site_name" content="Hamster">
+<meta property="og:description" content="前言有些太基础的东西就没不记录了。仅作为查漏补缺 基础数据类型略，和c基本没区别。   引用稍微讲一下引用，很多资料写的不是很清楚   c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。 常量由#def">
+<meta property="og:locale" content="ch">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p1.jpg">
+<meta property="article:published_time" content="2020-07-20T06:03:16.000Z">
+<meta property="article:modified_time" content="2020-07-29T14:38:07.694Z">
+<meta property="article:author" content="IC3-CR3AM">
+<meta property="article:tag" content="disassemble">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p1.jpg">
+    
+
+    <!-- Favicon -->
+    
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Roboto:300,400,700" rel="stylesheet">
+
+    
+<link rel="stylesheet" href="/style.css">
+
+    <script>
+      function setLoadingBarProgress(num) {
+        document.getElementById('loading-bar').style.width = num + "%";
+      }
+    </script>
+
+    
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+
+<div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+
+<script>setLoadingBarProgress(20)</script>
+
+<div id="site-wrapper">
+
+    <header id="header">
+    <div id="header-wrapper" class="clearfix">
+        <a id="logo" href="/">
+            <img src="/img/logo.png"/>
+            <span id="site-desc">
+                delicious
+            </span>
+        </a>
+        <button id="site-nav-switch">
+            <span class="icon icon-menu"></span>
+        </button>
+    </div>
+</header>
+    <script>setLoadingBarProgress(40);</script>
+
+    <main id="main" role="main">
+        <article id="post-disassemble"
+         class="post article white-box article-type-post"
+         itemscope itemprop="blogPost">
+    <h2 class="title">
+        <a href="/2020/07/20/disassemble/">
+            c++反汇编小结（1）
+        </a>
+    </h2>
+    <time>
+        Jul 20, 2020
+    </time>
+    <section class="content">
+        <div class="article-entry" itemprop="articleBody">
+            <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p1.jpg" class>
+
+<h2><span id="前言">前言</span></h2><p>有些太基础的东西就没不记录了。仅作为查漏补缺</p>
+<h2><span id="基础数据类型">基础数据类型</span></h2><p>略，和c基本没区别。  </p>
+<h3><span id="引用">引用</span></h3><p>稍微讲一下<strong>引用</strong>，很多资料写的不是很清楚  </p>
+<p>c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。<br>创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。</p>
+<h3><span id="常量">常量</span></h3><p>由#define修饰后会被编译为立即数寻址。<br>由const修饰的变量本质上还是变量，在编译期间检测是否有修改过。因为本身还是变量，所以通过指针的方式获取，并且强制类型转换就可以修改。<br>那么被const修饰的变量本身也不会像真常量一样放在常量数据区，而是通过作用域决定在内存中的位置。</p>
+<h2><span id="启动函数">启动函数</span></h2><p>一般由mainCRTStartUp函数作为从kernal32出来的程序入口（入口函数名可能会变，总共有四种）。<br>主要负责堆内存的初始化，main函数所需要的三个参数的初始化，分别为argc，argv，env。</p>
+<p>PS：在OllyDbg中需要手动找main，可以一起寻找进入main函数前的一些初始化函数，比如getCommandLineA，再顺着往下找，看到三次参数压栈就知道马上要进入main了。</p>
+<h2><span id="函数调用方式">函数调用方式</span></h2><p>vc++下有三种调用方式_cdecl,_stdcall,_fastcall</p>
+<pre><code>_cdecl：是默认调用方式，调用者负责平衡栈，不定参数的函数可以使用  
+_stdcall：被调用者平衡栈，不定参数的函数无法使用  
+_fastcall：比_stdcall多了一个用寄存器来传递参数  </code></pre><p>PS，在优化后，可能出现集中在一起进行一次栈平衡的操作</p>
+<h3><span id="对形参实参的汇编新解">对形参/实参的汇编新解</span></h3><p>新生学c的时候总有个问题，为什么在写第一个交换变量函数里不能用形参，而是要用指针<br>其实汇编内部是用栈传参，是将原本寄存器或者内存的数据拷贝一份进行压栈，这个时候栈桢内部是个数据备份<br>所以要通过传指针，间接的方式来访问真实的原数据</p>
+<h3><span id="不定长参数函数">不定长参数函数</span></h3><p>定义</p>
+<pre><code>至少一个参数  
+每个参数定长，为dword型  
+需要在某一参数中定下总长度或者结束符</code></pre><p>这样只要访问到第一个参数的地址，除了double型的，都能通过地址+4来获取下一个地址<br>另，像printf函数，是在第一个参数就决定了参数列表的长度，通过判断%的个数</p>
+<h3><span id="函数方面小结基础知识点">函数方面小结【基础知识点】</span></h3><pre><code>1.参数传递：通过栈或者寄存器传参  
+2.函数调用：也就是call调用，这个时候会将返回地址压栈，也就会esp+4  
+3.保存栈底：在形成栈桢的时刻，先将ebp压栈，再更新ebp为新的esp地址  
+4.栈平衡：因为不定长参数列表，所以函数自身无法确定所使用多少栈空间，所以用ret指针进行栈平衡（非__cdecl下）；__cdecl下是直接调整esp  
+5.ret指令：一般是近跳转，可以解释为pop ip；但是有ret 4的写法，含义为，pop ip；add esp 4；  </code></pre><h2><span id="变量">变量</span></h2><h3><span id="全局和局部变量">全局和局部变量</span></h3><p>全局变量是在链接的时候直接写入PE文件，存在PE的可读写节中<br>在程序运行到main之前，全局变量就已经加载完毕<br>局部变量的生命周期，在超出作用域之后，会被栈平衡的时候释放空间<br>上面混用了生命周期和作用域，是因为对于局部变量在花括号内，作用域和生命周期是一致的<br>局部变量无法访问作用域外的空间，是因为编译器会在编译前进行检查，来限制对外访问  </p>
+<h4><span id="访问方式">访问方式</span></h4><p>局部变量通过栈指针间接访问<br>而全局变量访问是通过在编译期间算好的具体地址，直接通过立即数访问</p>
+<p>冷知识：全局变量在内存中是从低地址到高地址，和局部变量相反</p>
+<h3><span id="局部静态变量">局部静态变量</span></h3><p>全局静态变量和全局变量在汇编层面上是完全一致的，只是在编译期间，编译器限制全局静态变量不能访问其他文件<br>局部静态变量也是和全局变量存在同一个节里，生命周期也和全局变量一致，只是使用的时候对它进行赋值。<br>规定了只能一次初始化，但是对于局部静态变量都是赋值，所以编译器会生成一个标志比特，置为一则是代表已经初始化过，避免多次初始化<br>然后通过名称粉碎法的方式来限制它的作用域，将原有的名称改成<strong>名称+作用域+类型</strong>等  </p>
+<p>PS：c++的函数重载也是用的同一种技术</p>
+<h3><span id="堆变量">堆变量</span></h3><h4><span id="malloc和new的区别">malloc和new的区别</span></h4><p>malloc通常需要申请划分一块新的内存，而new直接使用已经申请好的空闲块</p>
+<p>PS：debug模式下，堆数据空间内的gap前后四个字节标为0xFD，用来检测越界</p>
+
+        </div>
+        <div class="article-tags tags">
+            
+                <a class="tag-link" href="/tags/disassemble/" rel="tag">disassemble</a>
+            
+        </div>
+    </section>
+</article>
+
+
+    <section id="comments">
+        <div id="disqus_thread"></div>
+    </section>
+
+
+
+
+        <script>setLoadingBarProgress(60);</script>
+    </main>
+
+    <footer id="footer" class="clearfix">
+
+    
+
+    <div class="social-wrapper">
+        
+            
+                <a href="https://github.com/IC3-CR3AM" class="social github"
+                   target="_blank" rel="external">
+                    <span class="icon icon-github"></span>
+                </a>
+            
+        
+    </div>
+
+    <div class="theme-by">Theme <span class="codename">Memory</span> designed by <a href="https://artifact.me/"
+                                                                                    target="_blank">Art Chen</a>.
+    </div>
+    <div>&copy; <a href="/">Hamster</a></div>
+
+</footer>
+
+
+    <script>setLoadingBarProgress(80);</script>
+    <div class="overlay"></div>
+</div>
+
+<div class="site-sidebar" id="site-sidebar">
+
+    
+
+    <div class="sidebar-switch clearfix "
+         style="display: none">
+        <a class="dark-btn active" data-toggle="toc">
+            <span class="icon icon-list"></span>
+            <span class="text">Index</span>
+        </a>
+        <a class="dark-btn" data-toggle="bio">
+            <span class="icon icon-person"></span>
+            <span class="text">Bio</span>
+        </a>
+    </div>
+
+    <div class="site-toc "
+         style="display: none">
+        
+            <div class="no-index">No Index</div>
+        
+    </div>
+
+    <div class="site-bio show"
+         style="display: block">
+
+        <div class="about-me clearfix">
+            <div class="avatar">
+                <img src="/img/avatar.png"/>
+            </div>
+            <div class="info">
+                <a class="name dark-btn" href="/about">
+                    IC3-CR3AM
+                </a>
+            </div>
+            <div class="info">
+                <span class="item desc">
+                    
+                </span>
+            </div>
+        </div>
+
+        <div class="menu section">
+            <ul class="clearfix">
+                
+                    <li class="left">
+                        <a href="/about"
+                           onfocus="this.blur();"
+                           class="nav-about dark-btn block">
+                            About
+                        </a>
+                    </li>
+                
+                    <li class="right">
+                        <a href="/archives"
+                           onfocus="this.blur();"
+                           class="nav-archives dark-btn block">
+                            Archives
+                        </a>
+                    </li>
+                
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="shortcuts">
+        <a href="#header" class="top window-nav dark-btn" id="go-top">
+            <span class="icon icon-chevron-thin-up"></span>
+        </a>
+        <a class="close dark-btn" id="sidebar-close">
+            <span class="icon icon-close"></span>
+        </a>
+        <a href="#footer" class="top window-nav dark-btn" id="go-bottom">
+            <span class="icon icon-chevron-thin-down"></span>
+        </a>
+    </div>
+
+</div>
+
+
+    <script>
+      var disqus_shortname = 'ic3-cr3am';
+      
+      var disqus_url = 'http://yoursite.com/2020/07/20/disassemble/';
+      
+      (function () {
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+
+
+
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>window.jQuery || document.write('<script src="/js/jquery.min.js"><\/script>')</script>
+
+
+<script src="/js/jquery.fitvids.js"></script>
+
+<script>
+  var GOOGLE_CUSTOM_SEARCH_API_KEY = "";
+  var GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "";
+  var ALGOLIA_API_KEY = "";
+  var ALGOLIA_APP_ID = "";
+  var ALGOLIA_INDEX_NAME = "";
+  var AZURE_SERVICE_NAME = "";
+  var AZURE_INDEX_NAME = "";
+  var AZURE_QUERY_KEY = "";
+  var SEARCH_SERVICE = "";
+  var universalSearchConfig = {};
+  if (SEARCH_SERVICE === 'google') {
+    universalSearchConfig = {
+      searchService: SEARCH_SERVICE,
+      apiKey: GOOGLE_CUSTOM_SEARCH_API_KEY,
+      engineId: GOOGLE_CUSTOM_SEARCH_ENGINE_ID,
+      imagePath: "/img/"
+    };
+  } else if (SEARCH_SERVICE === 'algolia') {
+    universalSearchConfig = {
+      searchService: SEARCH_SERVICE,
+      apiKey: ALGOLIA_API_KEY,
+      appId: ALGOLIA_APP_ID,
+      indexName: ALGOLIA_INDEX_NAME,
+      imagePath: "/img/"
+    };
+  } else if (SEARCH_SERVICE === 'azure') {
+    universalSearchConfig = {
+      searchService: SEARCH_SERVICE,
+      serviceName: AZURE_SERVICE_NAME,
+      indexName: AZURE_INDEX_NAME,
+      apiKey: AZURE_QUERY_KEY,
+      imagePath: "/img/"
+    };
+  }
+</script>
+
+<script src="/js/app.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+
+
+
+<script>setLoadingBarProgress(100);</script>
+
+</body>
+</html>

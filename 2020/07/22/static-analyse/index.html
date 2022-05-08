@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    
+    <title>静态分析学习笔记 | Hamster</title>
+    <meta name="description" content="A minimal hexo theme."/>
+    <meta name="keywords" content="hexo,theme,ctf,web"/>
+    <meta name="HandheldFriendly" content="True"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="google-site-verification" content=""/>
+    <meta name="baidu-site-verification" content=""/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="一些话南大的软件分析课程最近放在b站上了，虽然只有一半的课程老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看就我个人的理解，这门课是针对逆向的学术扩展目前学习了两节课，再接再厉 IR静态分析是基于IR的，也就是中间语言进行分析的选择IR而不是AST的理由： IR更加“低级”   通常不依赖语言   简洁，没什么冗余信息   包含控制流信息  虽然有些也能在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="静态分析学习笔记">
+<meta property="og:url" content="http://yoursite.com/2020/07/22/static-analyse/index.html">
+<meta property="og:site_name" content="Hamster">
+<meta property="og:description" content="一些话南大的软件分析课程最近放在b站上了，虽然只有一半的课程老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看就我个人的理解，这门课是针对逆向的学术扩展目前学习了两节课，再接再厉 IR静态分析是基于IR的，也就是中间语言进行分析的选择IR而不是AST的理由： IR更加“低级”   通常不依赖语言   简洁，没什么冗余信息   包含控制流信息  虽然有些也能在">
+<meta property="og:locale" content="ch">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/3AC.PNG">
+<meta property="article:published_time" content="2020-07-22T13:01:34.000Z">
+<meta property="article:modified_time" content="2020-07-28T12:01:15.973Z">
+<meta property="article:author" content="IC3-CR3AM">
+<meta property="article:tag" content="static_analyse">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png">
+    
+
+    <!-- Favicon -->
+    
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css?family=Inconsolata|Roboto:300,400,700" rel="stylesheet">
+
+    
+<link rel="stylesheet" href="/style.css">
+
+    <script>
+      function setLoadingBarProgress(num) {
+        document.getElementById('loading-bar').style.width = num + "%";
+      }
+    </script>
+
+    
+<meta name="generator" content="Hexo 4.2.1"></head>
+
+<body>
+
+<div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+
+<script>setLoadingBarProgress(20)</script>
+
+<div id="site-wrapper">
+
+    <header id="header">
+    <div id="header-wrapper" class="clearfix">
+        <a id="logo" href="/">
+            <img src="/img/logo.png"/>
+            <span id="site-desc">
+                delicious
+            </span>
+        </a>
+        <button id="site-nav-switch">
+            <span class="icon icon-menu"></span>
+        </button>
+    </div>
+</header>
+    <script>setLoadingBarProgress(40);</script>
+
+    <main id="main" role="main">
+        <article id="post-static-analyse"
+         class="post article white-box article-type-post"
+         itemscope itemprop="blogPost">
+    <h2 class="title">
+        <a href="/2020/07/22/static-analyse/">
+            静态分析学习笔记
+        </a>
+    </h2>
+    <time>
+        Jul 22, 2020
+    </time>
+    <section class="content">
+        <div class="article-entry" itemprop="articleBody">
+            <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png" class>
+
+<h1><span id="一些话">一些话</span></h1><p>南大的软件分析课程最近放在b站上了，虽然只有一半的课程<br>老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看<br>就我个人的理解，这门课是针对逆向的学术扩展<br>目前学习了两节课，再接再厉</p>
+<h2><span id="ir">IR</span></h2><p>静态分析是基于IR的，也就是中间语言进行分析的<br>选择IR而不是AST的理由：</p>
+<pre><code>IR更加“低级”  
+通常不依赖语言  
+简洁，没什么冗余信息  
+包含控制流信息  </code></pre><p>虽然有些也能在ast上分析</p>
+<h3><span id="3ac三地址码">3AC——三地址码</span></h3><p>定义：在每一条语句里，等号右边只能由一个操作符。以及一句语句里最多只有三个地址<br>以下一些基本的定义，</p>
+<pre><code>bop：二元操作  
+uop：一元操作  
+L:标签  
+rop：关系操作，例如大于等于</code></pre><h3><span id="ssa提及">SSA（提及）</span></h3><p>Static Single Assignment<br>定义：</p>
+<pre><code>给每个定义一个新的名字  
+并且这个名字在后续语句里也会用到
+每个变量有且只有一个定义</code></pre><p>对于合并操作有个专门的函数，叫做（Phi-function）<br>优点：对上下文的顺序，可以将控制流信息通过独立的名字，根据上下文进行推断出；定义和使用非常准确<br>缺点：引入太多变量和phi-funtion，会导致效率大大降低</p>
+<h3><span id="控制流分析">控制流分析</span></h3><p>这个分析经常被用来生成控制流图<br>控制流图又是控制分析的基础，一旦生成了图就可以用一些图论的结论，分析它的前驱后继的关系也相对容易<br>看下图，每个节点既可以用单独的三地址码语句，也可以用BB（Basic Block）<br><img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/3AC.PNG" alt></p>
+<h3><span id="basic-blocksbb基本块">Basic Blocks（BB，基本块）</span></h3><p>基本块，将控制流按照一定的规则进行分割，将代码分成一块块，每一块都是一个BB，将所有的BB根据控制流连线就成了CFG——控制流图<br>定义：每一个块只有一个入口一个出口，本且将每一块填充的连续代码尽可能地多<br>BB的生成算法：  </p>
+<pre><code>1.找到所有BB的入口，
+    第一条指令
+    所有的跳转目标
+    跳转语句的下一条
+2.建立基本块，
+    将每一个入口下后续的语句纳入BB，直到碰到下一个入口</code></pre><p>CFG生成算法：</p>
+<pre><code>1.块末尾的跳转到新块的头
+2.两个紧接着，上下会连续执行的块
+3.将原本三地址码的跳转标签换成BB的标签
+4.最后，加上入口和出口模块，主要是用来方便分析程序进行操作</code></pre>
+        </div>
+        <div class="article-tags tags">
+            
+                <a class="tag-link" href="/tags/static-analyse/" rel="tag">static_analyse</a>
+            
+        </div>
+    </section>
+</article>
+
+
+    <section id="comments">
+        <div id="disqus_thread"></div>
+    </section>
+
+
+
+
+        <script>setLoadingBarProgress(60);</script>
+    </main>
+
+    <footer id="footer" class="clearfix">
+
+    
+
+    <div class="social-wrapper">
+        
+            
+                <a href="https://github.com/IC3-CR3AM" class="social github"
+                   target="_blank" rel="external">
+                    <span class="icon icon-github"></span>
+                </a>
+            
+        
+    </div>
+
+    <div class="theme-by">Theme <span class="codename">Memory</span> designed by <a href="https://artifact.me/"
+                                                                                    target="_blank">Art Chen</a>.
+    </div>
+    <div>&copy; <a href="/">Hamster</a></div>
+
+</footer>
+
+
+    <script>setLoadingBarProgress(80);</script>
+    <div class="overlay"></div>
+</div>
+
+<div class="site-sidebar" id="site-sidebar">
+
+    
+
+    <div class="sidebar-switch clearfix "
+         style="display: none">
+        <a class="dark-btn active" data-toggle="toc">
+            <span class="icon icon-list"></span>
+            <span class="text">Index</span>
+        </a>
+        <a class="dark-btn" data-toggle="bio">
+            <span class="icon icon-person"></span>
+            <span class="text">Bio</span>
+        </a>
+    </div>
+
+    <div class="site-toc "
+         style="display: none">
+        
+            <div class="no-index">No Index</div>
+        
+    </div>
+
+    <div class="site-bio show"
+         style="display: block">
+
+        <div class="about-me clearfix">
+            <div class="avatar">
+                <img src="/img/avatar.png"/>
+            </div>
+            <div class="info">
+                <a class="name dark-btn" href="/about">
+                    IC3-CR3AM
+                </a>
+            </div>
+            <div class="info">
+                <span class="item desc">
+                    
+                </span>
+            </div>
+        </div>
+
+        <div class="menu section">
+            <ul class="clearfix">
+                
+                    <li class="left">
+                        <a href="/about"
+                           onfocus="this.blur();"
+                           class="nav-about dark-btn block">
+                            About
+                        </a>
+                    </li>
+                
+                    <li class="right">
+                        <a href="/archives"
+                           onfocus="this.blur();"
+                           class="nav-archives dark-btn block">
+                            Archives
+                        </a>
+                    </li>
+                
+            </ul>
+        </div>
+
+    </div>
+
+    <div class="shortcuts">
+        <a href="#header" class="top window-nav dark-btn" id="go-top">
+            <span class="icon icon-chevron-thin-up"></span>
+        </a>
+        <a class="close dark-btn" id="sidebar-close">
+            <span class="icon icon-close"></span>
+        </a>
+        <a href="#footer" class="top window-nav dark-btn" id="go-bottom">
+            <span class="icon icon-chevron-thin-down"></span>
+        </a>
+    </div>
+
+</div>
+
+
+    <script>
+      var disqus_shortname = 'ic3-cr3am';
+      
+      var disqus_url = 'http://yoursite.com/2020/07/22/static-analyse/';
+      
+      (function () {
+        var dsq = document.createElement('script');
+        dsq.type = 'text/javascript';
+        dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();
+    </script>
+
+
+
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>window.jQuery || document.write('<script src="/js/jquery.min.js"><\/script>')</script>
+
+
+<script src="/js/jquery.fitvids.js"></script>
+
+<script>
+  var GOOGLE_CUSTOM_SEARCH_API_KEY = "";
+  var GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "";
+  var ALGOLIA_API_KEY = "";
+  var ALGOLIA_APP_ID = "";
+  var ALGOLIA_INDEX_NAME = "";
+  var AZURE_SERVICE_NAME = "";
+  var AZURE_INDEX_NAME = "";
+  var AZURE_QUERY_KEY = "";
+  var SEARCH_SERVICE = "";
+  var universalSearchConfig = {};
+  if (SEARCH_SERVICE === 'google') {
+    universalSearchConfig = {
+      searchService: SEARCH_SERVICE,
+      apiKey: GOOGLE_CUSTOM_SEARCH_API_KEY,
+      engineId: GOOGLE_CUSTOM_SEARCH_ENGINE_ID,
+      imagePath: "/img/"
+    };
+  } else if (SEARCH_SERVICE === 'algolia') {
+    universalSearchConfig = {
+      searchService: SEARCH_SERVICE,
+      apiKey: ALGOLIA_API_KEY,
+      appId: ALGOLIA_APP_ID,
+      indexName: ALGOLIA_INDEX_NAME,
+      imagePath: "/img/"
+    };
+  } else if (SEARCH_SERVICE === 'azure') {
+    universalSearchConfig = {
+      searchService: SEARCH_SERVICE,
+      serviceName: AZURE_SERVICE_NAME,
+      indexName: AZURE_INDEX_NAME,
+      apiKey: AZURE_QUERY_KEY,
+      imagePath: "/img/"
+    };
+  }
+</script>
+
+<script src="/js/app.js"></script>
+
+
+<script src="/js/search.js"></script>
+
+
+
+
+
+<script>setLoadingBarProgress(100);</script>
+
+</body>
+</html>
