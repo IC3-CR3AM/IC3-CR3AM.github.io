@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="指针冷知识：复制字符串，一次是复制四个字节，因为用寄存器中转   数组细碎的小知识：数组在函数内都是以指针变量的形式存储，所以用sizeof只能返回指针长度的四字节，应该用strLen函数来测量数组长度多维数组的指针+1偏移是根据数组长度来的，而不是单单根据数据类型数组作为函数的返回值，在函数退出后数组内数据不稳定，可能被新开的栈所覆盖   寻址方式分为下标寻址和指针寻址因为数组名是地址，可以">
+<meta property="og:type" content="article">
+<meta property="og:title" content="c++反汇编小结（2）">
+<meta property="og:url" content="https://ic3-cr3am.github.io/2020/07/29/disassemble2/index.html">
+<meta property="og:site_name" content="IC3-CR3AM blog">
+<meta property="og:description" content="指针冷知识：复制字符串，一次是复制四个字节，因为用寄存器中转   数组细碎的小知识：数组在函数内都是以指针变量的形式存储，所以用sizeof只能返回指针长度的四字节，应该用strLen函数来测量数组长度多维数组的指针+1偏移是根据数组长度来的，而不是单单根据数据类型数组作为函数的返回值，在函数退出后数组内数据不稳定，可能被新开的栈所覆盖   寻址方式分为下标寻址和指针寻址因为数组名是地址，可以">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p2.jpg">
+<meta property="article:published_time" content="2020-07-29T13:51:00.000Z">
+<meta property="article:modified_time" content="2024-04-18T15:43:46.686Z">
+<meta property="article:author" content="IC3-CR3AM">
+<meta property="article:tag" content="disassemble">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p2.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>c++反汇编小结（2）</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2020/07/30/disassemble3/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/07/22/static-analyse/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2020/07/29/disassemble2/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&text=c++反汇编小结（2）"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&title=c++反汇编小结（2）"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&is_video=false&description=c++反汇编小结（2）"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=c++反汇编小结（2）&body=Check out this article: https://ic3-cr3am.github.io/2020/07/29/disassemble2/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&title=c++反汇编小结（2）"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&title=c++反汇编小结（2）"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&title=c++反汇编小结（2）"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&title=c++反汇编小结（2）"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&name=c++反汇编小结（2）&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&t=c++反汇编小结（2）"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%87%E9%92%88"><span class="toc-number">1.</span> <span class="toc-text">指针</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E7%BB%84"><span class="toc-number">1.1.</span> <span class="toc-text">数组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%BB%E5%9D%80%E6%96%B9%E5%BC%8F"><span class="toc-number">1.2.</span> <span class="toc-text">寻址方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88"><span class="toc-number">1.3.</span> <span class="toc-text">函数指针</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E4%BD%93%E5%92%8C%E7%B1%BB"><span class="toc-number">2.</span> <span class="toc-text">结构体和类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc-number">2.1.</span> <span class="toc-text">对象的内存布局</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#this%E6%8C%87%E9%92%88"><span class="toc-number">2.2.</span> <span class="toc-text">this指针</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E6%95%B0%E6%8D%AE%E6%88%90%E5%91%98"><span class="toc-number">2.3.</span> <span class="toc-text">静态数据成员</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E4%BD%9C%E4%B8%BA%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0"><span class="toc-number">2.4.</span> <span class="toc-text">对象作为函数参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E4%BD%9C%E4%B8%BA%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="toc-number">2.5.</span> <span class="toc-text">对象作为返回值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%92%8C%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">构造函数和析构函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="toc-number">3.1.</span> <span class="toc-text">构造函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.1.1.</span> <span class="toc-text">局部对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A0%86%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.1.2.</span> <span class="toc-text">堆对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.1.3.</span> <span class="toc-text">参数对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.1.4.</span> <span class="toc-text">返回对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E5%AF%B9%E8%B1%A1%E5%92%8C%E9%9D%99%E6%80%81%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.1.5.</span> <span class="toc-text">全局对象和静态对象</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E6%8F%90%E4%BE%9B%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%83%85%E5%86%B5"><span class="toc-number">3.2.</span> <span class="toc-text">编译器提供默认构造函数的情况</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%95%E6%97%B6%E8%B0%83%E7%94%A8%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0"><span class="toc-number">3.3.</span> <span class="toc-text">何时调用析构函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E5%AF%B9%E8%B1%A1-1"><span class="toc-number">3.3.1.</span> <span class="toc-text">局部对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A0%86%E5%AF%B9%E8%B1%A1-1"><span class="toc-number">3.3.2.</span> <span class="toc-text">堆对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%AF%B9%E8%B1%A1%E5%92%8C%E8%BF%94%E5%9B%9E%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.3.3.</span> <span class="toc-text">参数对象和返回对象</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E5%AF%B9%E8%B1%A1%E5%92%8C%E9%9D%99%E6%80%81%E5%AF%B9%E8%B1%A1-1"><span class="toc-number">3.4.</span> <span class="toc-text">全局对象和静态对象</span></a></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        c++反汇编小结（2）
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">IC3-CR3AM</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-07-29T13:51:00.000Z" class="dt-published" itemprop="datePublished">2020-07-29</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/disassemble/" rel="tag">disassemble</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p2.jpg" class="">
+
+<h2 id="指针"><a href="#指针" class="headerlink" title="指针"></a>指针</h2><p>冷知识：复制字符串，一次是复制四个字节，因为用寄存器中转  </p>
+<h3 id="数组"><a href="#数组" class="headerlink" title="数组"></a>数组</h3><p>细碎的小知识：数组在函数内都是以指针变量的形式存储，所以用sizeof只能返回指针长度的四字节，应该用strLen函数来测量数组长度<br>多维数组的指针+1偏移是根据数组长度来的，而不是单单根据数据类型<br><strong>数组作为函数的返回值</strong>，在函数退出后数组内数据不稳定，可能被新开的栈所覆盖  </p>
+<h3 id="寻址方式"><a href="#寻址方式" class="headerlink" title="寻址方式"></a>寻址方式</h3><p>分为下标寻址和指针寻址<br>因为数组名是地址，可以直接找到数组，再通过类型和大小，编译器就可以直接计算出数据的位置（下标为常量）<br>如果下标为变量就只能先将地址偏移到数组首地址，再根据变量做偏移<br>下标寻址即使是用变量和表达式依然会比指针寻址快，因为指针寻址是两次间接寻址，需要先找到指针，再找到真实的数据<br>而且用常量表达式的下标寻址在编译的时候就已经用常量折叠提前计算好了偏移  </p>
+<h3 id="函数指针"><a href="#函数指针" class="headerlink" title="函数指针"></a>函数指针</h3><p>函数指针和函数调用的区别仅仅在于，函数调用是直接调用，直接跳转到函数首地址上，而函数指针需要先从指针中找到函数地址，是间接调用<br>并且编译器会检查，不允许对函数指针进行一些加法减法的无意义操作</p>
+<h2 id="结构体和类"><a href="#结构体和类" class="headerlink" title="结构体和类"></a>结构体和类</h2><p>在C++的反汇编之后，结构体和类没有任何区别</p>
+<h3 id="对象的内存布局"><a href="#对象的内存布局" class="headerlink" title="对象的内存布局"></a>对象的内存布局</h3><pre><code>空类：在没有数据成员的情况下，类也需要实例化，所以仍会被分配一字节的空间用于实例化
+内存对齐：类成员可能因为数据类型不一致而需要进行内存对齐，所以类的实际大小并不能直接通过数据类型算出，还得根据默认对齐长度来算  
+静态数据成员：和静态局部变量类似，并不存储在类中，而是和全局变量保存在一起
+</code></pre>
+<h3 id="this指针"><a href="#this指针" class="headerlink" title="this指针"></a>this指针</h3><p>在调用成员函数的时候编译器会将对象首地址保存进ecx，这就是this指针，之后访问成员变量都是通过this来访问的，就像python里都是显示传入this，而在C++中都是隐藏的<br>这种调用方式称为thiscall，特点就是不用栈顶传参，而用ecx，调用约定类似于__stdcall是被调用方进行栈平衡  </p>
+<h3 id="静态数据成员"><a href="#静态数据成员" class="headerlink" title="静态数据成员"></a>静态数据成员</h3><p>比较难以识别，在汇编层面和全局变量相似，访问也不需要this指针，只能考猜，看这个变量是不是被多个同一个类的对象访问</p>
+<h3 id="对象作为函数参数"><a href="#对象作为函数参数" class="headerlink" title="对象作为函数参数"></a>对象作为函数参数</h3><p>对象作为参数传递的时候会复制一份数据作为形参（也就是会生成一个临时的对象出来，该对象有时候会调用拷贝构造函数），会复制每一个成员变量，由于没有编写拷贝构造函数，编译器调用浅拷贝<br>如果有成员变量是数组，或者字符串，会复制一份数组指针给形参，也就是现在有两个数组指针指向了同一块堆内存<br>一旦函数执行完成便会调用析构函数，将指针所指向的堆内存释放，也就是给这块内存标上特殊的标记，如果这时候原对象访问这块数据变会报错  </p>
+<p>两种解决方案，深拷贝和设置引用计数  </p>
+<pre><code>深拷贝：在复制的时候动用拷贝构造函数，把对象的成员变量也复制一份，这样函数内部就有一个全新的对象，退出函数时销毁的也是这个新生成的对象
+设置引用计数：同样是进入拷贝构造函数，但是这时候不再复制对象，而是对目前的引用计数，在删除的时候检测目前的引用数量是否为0，没有的话就减1，直到引用计数为0之时，释放掉申请资源
+</code></pre>
+<p>另一个问题，对象复制给形参，那么存储在哪里呢？答案是都存在栈空间内  </p>
+<h3 id="对象作为返回值"><a href="#对象作为返回值" class="headerlink" title="对象作为返回值"></a>对象作为返回值</h3><p>通常的数据类型返回走的是寄存器eax<br>但是对于对象显然是不行的，c++的操作是调用方在进入函数前就已经开辟栈桢，在调用函数的时候将栈桢内的对象地址赋值给函数<br>在函数调用结束的时候将对象成员变量通过之前的地址存入该临时对象内</p>
+<h2 id="构造函数和析构函数"><a href="#构造函数和析构函数" class="headerlink" title="构造函数和析构函数"></a>构造函数和析构函数</h2><h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><h4 id="局部对象"><a href="#局部对象" class="headerlink" title="局部对象"></a>局部对象</h4><p>对象生成时调用构造函数<br>此时的构造函数的特征是该对象调用的第一个函数，且会返回一个this指针  </p>
+<h4 id="堆对象"><a href="#堆对象" class="headerlink" title="堆对象"></a>堆对象</h4><p>指的是是用了new的语句，在生成完对象，紧接着就调用构造函数<br>c语言里的malloc并不会出发构造函数，它不属于运算符，也无法进行运算符重载</p>
+<h4 id="参数对象"><a href="#参数对象" class="headerlink" title="参数对象"></a>参数对象</h4><p>当对象为函数为参数时，会触发拷贝构造函数（只有一个参数，为对象的引用）<br>如果没有定义拷贝构造函数，编译器会自动调用默认拷贝构造函数，这个拷贝构造函数用的是浅拷贝（浅拷贝只会将成员变量的数据直接复制一份，如果是一些间接访问的需要自己定义一个深拷贝构造函数）  </p>
+<h4 id="返回对象"><a href="#返回对象" class="headerlink" title="返回对象"></a>返回对象</h4><p>类似于参数对象,但是两者的拷贝构造函数调用时机不一样<br>在函数返回的时候调用  </p>
+<h4 id="全局对象和静态对象"><a href="#全局对象和静态对象" class="headerlink" title="全局对象和静态对象"></a>全局对象和静态对象</h4><p>程序所有全局对象会在同一个点上调用构造函数进行初始化<br>这个调用过程在main之前，在vc6中是在_cinit中被调用，由编译器提供的构造代理函数完成全局构造函数的调用</p>
+<h3 id="编译器提供默认构造函数的情况"><a href="#编译器提供默认构造函数的情况" class="headerlink" title="编译器提供默认构造函数的情况"></a>编译器提供默认构造函数的情况</h3><p>不是所有对象都会被提供默认构造函数<br>有两种情况，</p>
+<pre><code>本类和本类成员或者父类中存在虚函数（虚表的初始化需要构造函数来完成）  
+或者本类为派生类
+</code></pre>
+<h3 id="何时调用析构函数"><a href="#何时调用析构函数" class="headerlink" title="何时调用析构函数"></a>何时调用析构函数</h3><h4 id="局部对象-1"><a href="#局部对象-1" class="headerlink" title="局部对象"></a>局部对象</h4><p>作用域结束前调用  </p>
+<h4 id="堆对象-1"><a href="#堆对象-1" class="headerlink" title="堆对象"></a>堆对象</h4><p>堆空间释放前调用<br>也就是程序员写的delete处，但是堆对象的处理方式比较特殊，不是直接调用析构函数而是调用代理析构函数，其中一个原因是有可能不止一个对象需要释放，例如释放一个对象数组<br>另，free不会触发析构函数</p>
+<h4 id="参数对象和返回对象"><a href="#参数对象和返回对象" class="headerlink" title="参数对象和返回对象"></a>参数对象和返回对象</h4><p>参数对象，在函数返回前调用<br>返回对象，如果返回后没有使用，在函数返回后调用；如果有对象引用，则根据引用的对象的生命周期来</p>
+<h3 id="全局对象和静态对象-1"><a href="#全局对象和静态对象-1" class="headerlink" title="全局对象和静态对象"></a>全局对象和静态对象</h3><p>在main函数结束之后，在exit函数中，由doexit函数负责调用析构函数</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%8C%87%E9%92%88"><span class="toc-number">1.</span> <span class="toc-text">指针</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E7%BB%84"><span class="toc-number">1.1.</span> <span class="toc-text">数组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%BB%E5%9D%80%E6%96%B9%E5%BC%8F"><span class="toc-number">1.2.</span> <span class="toc-text">寻址方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E6%8C%87%E9%92%88"><span class="toc-number">1.3.</span> <span class="toc-text">函数指针</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E6%9E%84%E4%BD%93%E5%92%8C%E7%B1%BB"><span class="toc-number">2.</span> <span class="toc-text">结构体和类</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc-number">2.1.</span> <span class="toc-text">对象的内存布局</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#this%E6%8C%87%E9%92%88"><span class="toc-number">2.2.</span> <span class="toc-text">this指针</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%99%E6%80%81%E6%95%B0%E6%8D%AE%E6%88%90%E5%91%98"><span class="toc-number">2.3.</span> <span class="toc-text">静态数据成员</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E4%BD%9C%E4%B8%BA%E5%87%BD%E6%95%B0%E5%8F%82%E6%95%B0"><span class="toc-number">2.4.</span> <span class="toc-text">对象作为函数参数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E4%BD%9C%E4%B8%BA%E8%BF%94%E5%9B%9E%E5%80%BC"><span class="toc-number">2.5.</span> <span class="toc-text">对象作为返回值</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E5%92%8C%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">构造函数和析构函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="toc-number">3.1.</span> <span class="toc-text">构造函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.1.1.</span> <span class="toc-text">局部对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A0%86%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.1.2.</span> <span class="toc-text">堆对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.1.3.</span> <span class="toc-text">参数对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BF%94%E5%9B%9E%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.1.4.</span> <span class="toc-text">返回对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E5%AF%B9%E8%B1%A1%E5%92%8C%E9%9D%99%E6%80%81%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.1.5.</span> <span class="toc-text">全局对象和静态对象</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E8%AF%91%E5%99%A8%E6%8F%90%E4%BE%9B%E9%BB%98%E8%AE%A4%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0%E7%9A%84%E6%83%85%E5%86%B5"><span class="toc-number">3.2.</span> <span class="toc-text">编译器提供默认构造函数的情况</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BD%95%E6%97%B6%E8%B0%83%E7%94%A8%E6%9E%90%E6%9E%84%E5%87%BD%E6%95%B0"><span class="toc-number">3.3.</span> <span class="toc-text">何时调用析构函数</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E5%AF%B9%E8%B1%A1-1"><span class="toc-number">3.3.1.</span> <span class="toc-text">局部对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A0%86%E5%AF%B9%E8%B1%A1-1"><span class="toc-number">3.3.2.</span> <span class="toc-text">堆对象</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8F%82%E6%95%B0%E5%AF%B9%E8%B1%A1%E5%92%8C%E8%BF%94%E5%9B%9E%E5%AF%B9%E8%B1%A1"><span class="toc-number">3.3.3.</span> <span class="toc-text">参数对象和返回对象</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E5%AF%B9%E8%B1%A1%E5%92%8C%E9%9D%99%E6%80%81%E5%AF%B9%E8%B1%A1-1"><span class="toc-number">3.4.</span> <span class="toc-text">全局对象和静态对象</span></a></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2020/07/29/disassemble2/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&text=c++反汇编小结（2）"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&title=c++反汇编小结（2）"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&is_video=false&description=c++反汇编小结（2）"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=c++反汇编小结（2）&body=Check out this article: https://ic3-cr3am.github.io/2020/07/29/disassemble2/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&title=c++反汇编小结（2）"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&title=c++反汇编小结（2）"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&title=c++反汇编小结（2）"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&title=c++反汇编小结（2）"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&name=c++反汇编小结（2）&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2020/07/29/disassemble2/&t=c++反汇编小结（2）"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    IC3-CR3AM
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

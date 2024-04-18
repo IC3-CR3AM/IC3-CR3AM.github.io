@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="前言有些太基础的东西就没不记录了。仅作为查漏补缺 基础数据类型略，和c基本没区别。   引用稍微讲一下引用，很多资料写的不是很清楚   c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。 常量由#def">
+<meta property="og:type" content="article">
+<meta property="og:title" content="c++反汇编小结（1）">
+<meta property="og:url" content="https://ic3-cr3am.github.io/2020/07/20/disassemble/index.html">
+<meta property="og:site_name" content="IC3-CR3AM blog">
+<meta property="og:description" content="前言有些太基础的东西就没不记录了。仅作为查漏补缺 基础数据类型略，和c基本没区别。   引用稍微讲一下引用，很多资料写的不是很清楚   c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。 常量由#def">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p1.jpg">
+<meta property="article:published_time" content="2020-07-20T14:03:16.000Z">
+<meta property="article:modified_time" content="2024-04-18T15:43:46.686Z">
+<meta property="article:author" content="IC3-CR3AM">
+<meta property="article:tag" content="disassemble">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p1.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>c++反汇编小结（1）</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2020/07/22/static-analyse/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2020/07/20/disassemble/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&text=c++反汇编小结（1）"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&title=c++反汇编小结（1）"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&is_video=false&description=c++反汇编小结（1）"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=c++反汇编小结（1）&body=Check out this article: https://ic3-cr3am.github.io/2020/07/20/disassemble/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&title=c++反汇编小结（1）"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&title=c++反汇编小结（1）"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&title=c++反汇编小结（1）"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&title=c++反汇编小结（1）"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&name=c++反汇编小结（1）&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2020/07/20/disassemble/&t=c++反汇编小结（1）"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">基础数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E7%94%A8"><span class="toc-number">2.1.</span> <span class="toc-text">引用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E9%87%8F"><span class="toc-number">2.2.</span> <span class="toc-text">常量</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%87%BD%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">启动函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">函数调用方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E5%BD%A2%E5%8F%82-%E5%AE%9E%E5%8F%82%E7%9A%84%E6%B1%87%E7%BC%96%E6%96%B0%E8%A7%A3"><span class="toc-number">4.1.</span> <span class="toc-text">对形参&#x2F;实参的汇编新解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E5%AE%9A%E9%95%BF%E5%8F%82%E6%95%B0%E5%87%BD%E6%95%B0"><span class="toc-number">4.2.</span> <span class="toc-text">不定长参数函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E6%96%B9%E9%9D%A2%E5%B0%8F%E7%BB%93%E3%80%90%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E7%82%B9%E3%80%91"><span class="toc-number">4.3.</span> <span class="toc-text">函数方面小结【基础知识点】</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%98%E9%87%8F"><span class="toc-number">5.</span> <span class="toc-text">变量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E5%92%8C%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F"><span class="toc-number">5.1.</span> <span class="toc-text">全局和局部变量</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BF%E9%97%AE%E6%96%B9%E5%BC%8F"><span class="toc-number">5.1.1.</span> <span class="toc-text">访问方式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F"><span class="toc-number">5.2.</span> <span class="toc-text">局部静态变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%86%E5%8F%98%E9%87%8F"><span class="toc-number">5.3.</span> <span class="toc-text">堆变量</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#malloc%E5%92%8Cnew%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">5.3.1.</span> <span class="toc-text">malloc和new的区别</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        c++反汇编小结（1）
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">IC3-CR3AM</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-07-20T14:03:16.000Z" class="dt-published" itemprop="datePublished">2020-07-20</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/disassemble/" rel="tag">disassemble</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p1.jpg" class="">
+
+<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>有些太基础的东西就没不记录了。仅作为查漏补缺</p>
+<h2 id="基础数据类型"><a href="#基础数据类型" class="headerlink" title="基础数据类型"></a>基础数据类型</h2><p>略，和c基本没区别。  </p>
+<h3 id="引用"><a href="#引用" class="headerlink" title="引用"></a>引用</h3><p>稍微讲一下<strong>引用</strong>，很多资料写的不是很清楚  </p>
+<p>c++中引用就是指针的封装，通过编译器来限制程序员不能随意修改指针指向的内存地址，并且做到了访问引用就能访问到变量中的数据，向程序员隐藏了中间间接寻址的过程。<br>创造引用的目的是为了简化指针操作，防止误操作。在汇编级别上，只有指针没有引用这个东西。</p>
+<h3 id="常量"><a href="#常量" class="headerlink" title="常量"></a>常量</h3><p>由#define修饰后会被编译为立即数寻址。<br>由const修饰的变量本质上还是变量，在编译期间检测是否有修改过。因为本身还是变量，所以通过指针的方式获取，并且强制类型转换就可以修改。<br>那么被const修饰的变量本身也不会像真常量一样放在常量数据区，而是通过作用域决定在内存中的位置。</p>
+<h2 id="启动函数"><a href="#启动函数" class="headerlink" title="启动函数"></a>启动函数</h2><p>一般由mainCRTStartUp函数作为从kernal32出来的程序入口（入口函数名可能会变，总共有四种）。<br>主要负责堆内存的初始化，main函数所需要的三个参数的初始化，分别为argc，argv，env。</p>
+<p>PS：在OllyDbg中需要手动找main，可以一起寻找进入main函数前的一些初始化函数，比如getCommandLineA，再顺着往下找，看到三次参数压栈就知道马上要进入main了。</p>
+<h2 id="函数调用方式"><a href="#函数调用方式" class="headerlink" title="函数调用方式"></a>函数调用方式</h2><p>vc++下有三种调用方式_cdecl,_stdcall,_fastcall</p>
+<pre><code>_cdecl：是默认调用方式，调用者负责平衡栈，不定参数的函数可以使用  
+_stdcall：被调用者平衡栈，不定参数的函数无法使用  
+_fastcall：比_stdcall多了一个用寄存器来传递参数  
+</code></pre>
+<p>PS，在优化后，可能出现集中在一起进行一次栈平衡的操作</p>
+<h3 id="对形参-实参的汇编新解"><a href="#对形参-实参的汇编新解" class="headerlink" title="对形参&#x2F;实参的汇编新解"></a>对形参&#x2F;实参的汇编新解</h3><p>新生学c的时候总有个问题，为什么在写第一个交换变量函数里不能用形参，而是要用指针<br>其实汇编内部是用栈传参，是将原本寄存器或者内存的数据拷贝一份进行压栈，这个时候栈桢内部是个数据备份<br>所以要通过传指针，间接的方式来访问真实的原数据</p>
+<h3 id="不定长参数函数"><a href="#不定长参数函数" class="headerlink" title="不定长参数函数"></a>不定长参数函数</h3><p>定义</p>
+<pre><code>至少一个参数  
+每个参数定长，为dword型  
+需要在某一参数中定下总长度或者结束符
+</code></pre>
+<p>这样只要访问到第一个参数的地址，除了double型的，都能通过地址+4来获取下一个地址<br>另，像printf函数，是在第一个参数就决定了参数列表的长度，通过判断%的个数</p>
+<h3 id="函数方面小结【基础知识点】"><a href="#函数方面小结【基础知识点】" class="headerlink" title="函数方面小结【基础知识点】"></a>函数方面小结【基础知识点】</h3><pre><code>1.参数传递：通过栈或者寄存器传参  
+2.函数调用：也就是call调用，这个时候会将返回地址压栈，也就会esp+4  
+3.保存栈底：在形成栈桢的时刻，先将ebp压栈，再更新ebp为新的esp地址  
+4.栈平衡：因为不定长参数列表，所以函数自身无法确定所使用多少栈空间，所以用ret指针进行栈平衡（非__cdecl下）；__cdecl下是直接调整esp  
+5.ret指令：一般是近跳转，可以解释为pop ip；但是有ret 4的写法，含义为，pop ip；add esp 4；  
+</code></pre>
+<h2 id="变量"><a href="#变量" class="headerlink" title="变量"></a>变量</h2><h3 id="全局和局部变量"><a href="#全局和局部变量" class="headerlink" title="全局和局部变量"></a>全局和局部变量</h3><p>全局变量是在链接的时候直接写入PE文件，存在PE的可读写节中<br>在程序运行到main之前，全局变量就已经加载完毕<br>局部变量的生命周期，在超出作用域之后，会被栈平衡的时候释放空间<br>上面混用了生命周期和作用域，是因为对于局部变量在花括号内，作用域和生命周期是一致的<br>局部变量无法访问作用域外的空间，是因为编译器会在编译前进行检查，来限制对外访问  </p>
+<h4 id="访问方式"><a href="#访问方式" class="headerlink" title="访问方式"></a>访问方式</h4><p>局部变量通过栈指针间接访问<br>而全局变量访问是通过在编译期间算好的具体地址，直接通过立即数访问</p>
+<p>冷知识：全局变量在内存中是从低地址到高地址，和局部变量相反</p>
+<h3 id="局部静态变量"><a href="#局部静态变量" class="headerlink" title="局部静态变量"></a>局部静态变量</h3><p>全局静态变量和全局变量在汇编层面上是完全一致的，只是在编译期间，编译器限制全局静态变量不能访问其他文件<br>局部静态变量也是和全局变量存在同一个节里，生命周期也和全局变量一致，只是使用的时候对它进行赋值。<br>规定了只能一次初始化，但是对于局部静态变量都是赋值，所以编译器会生成一个标志比特，置为一则是代表已经初始化过，避免多次初始化<br>然后通过名称粉碎法的方式来限制它的作用域，将原有的名称改成<strong>名称+作用域+类型</strong>等  </p>
+<p>PS：c++的函数重载也是用的同一种技术</p>
+<h3 id="堆变量"><a href="#堆变量" class="headerlink" title="堆变量"></a>堆变量</h3><h4 id="malloc和new的区别"><a href="#malloc和new的区别" class="headerlink" title="malloc和new的区别"></a>malloc和new的区别</h4><p>malloc通常需要申请划分一块新的内存，而new直接使用已经申请好的空闲块</p>
+<p>PS：debug模式下，堆数据空间内的gap前后四个字节标为0xFD，用来检测越界</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9F%BA%E7%A1%80%E6%95%B0%E6%8D%AE%E7%B1%BB%E5%9E%8B"><span class="toc-number">2.</span> <span class="toc-text">基础数据类型</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BC%95%E7%94%A8"><span class="toc-number">2.1.</span> <span class="toc-text">引用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B8%B8%E9%87%8F"><span class="toc-number">2.2.</span> <span class="toc-text">常量</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%90%AF%E5%8A%A8%E5%87%BD%E6%95%B0"><span class="toc-number">3.</span> <span class="toc-text">启动函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E8%B0%83%E7%94%A8%E6%96%B9%E5%BC%8F"><span class="toc-number">4.</span> <span class="toc-text">函数调用方式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E5%BD%A2%E5%8F%82-%E5%AE%9E%E5%8F%82%E7%9A%84%E6%B1%87%E7%BC%96%E6%96%B0%E8%A7%A3"><span class="toc-number">4.1.</span> <span class="toc-text">对形参&#x2F;实参的汇编新解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%8D%E5%AE%9A%E9%95%BF%E5%8F%82%E6%95%B0%E5%87%BD%E6%95%B0"><span class="toc-number">4.2.</span> <span class="toc-text">不定长参数函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%87%BD%E6%95%B0%E6%96%B9%E9%9D%A2%E5%B0%8F%E7%BB%93%E3%80%90%E5%9F%BA%E7%A1%80%E7%9F%A5%E8%AF%86%E7%82%B9%E3%80%91"><span class="toc-number">4.3.</span> <span class="toc-text">函数方面小结【基础知识点】</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8F%98%E9%87%8F"><span class="toc-number">5.</span> <span class="toc-text">变量</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%A8%E5%B1%80%E5%92%8C%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F"><span class="toc-number">5.1.</span> <span class="toc-text">全局和局部变量</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%AE%BF%E9%97%AE%E6%96%B9%E5%BC%8F"><span class="toc-number">5.1.1.</span> <span class="toc-text">访问方式</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F"><span class="toc-number">5.2.</span> <span class="toc-text">局部静态变量</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A0%86%E5%8F%98%E9%87%8F"><span class="toc-number">5.3.</span> <span class="toc-text">堆变量</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#malloc%E5%92%8Cnew%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-number">5.3.1.</span> <span class="toc-text">malloc和new的区别</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2020/07/20/disassemble/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&text=c++反汇编小结（1）"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&title=c++反汇编小结（1）"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&is_video=false&description=c++反汇编小结（1）"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=c++反汇编小结（1）&body=Check out this article: https://ic3-cr3am.github.io/2020/07/20/disassemble/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&title=c++反汇编小结（1）"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&title=c++反汇编小结（1）"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&title=c++反汇编小结（1）"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&title=c++反汇编小结（1）"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2020/07/20/disassemble/&name=c++反汇编小结（1）&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2020/07/20/disassemble/&t=c++反汇编小结（1）"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    IC3-CR3AM
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

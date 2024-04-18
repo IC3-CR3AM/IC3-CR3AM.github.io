@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="一些话南大的软件分析课程最近放在b站上了，虽然只有一半的课程老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看就我个人的理解，这门课是针对逆向的学术扩展目前学习了两节课，再接再厉 IR静态分析是基于IR的，也就是中间语言进行分析的选择IR而不是AST的理由： IR更加“低级”   通常不依赖语言   简洁，没什么冗余信息   包含控制流信息    虽然有些也">
+<meta property="og:type" content="article">
+<meta property="og:title" content="静态分析学习笔记">
+<meta property="og:url" content="https://ic3-cr3am.github.io/2020/07/22/static-analyse/index.html">
+<meta property="og:site_name" content="IC3-CR3AM blog">
+<meta property="og:description" content="一些话南大的软件分析课程最近放在b站上了，虽然只有一半的课程老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看就我个人的理解，这门课是针对逆向的学术扩展目前学习了两节课，再接再厉 IR静态分析是基于IR的，也就是中间语言进行分析的选择IR而不是AST的理由： IR更加“低级”   通常不依赖语言   简洁，没什么冗余信息   包含控制流信息    虽然有些也">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/3AC.PNG">
+<meta property="article:published_time" content="2020-07-22T21:01:34.000Z">
+<meta property="article:modified_time" content="2024-04-18T15:43:46.690Z">
+<meta property="article:author" content="IC3-CR3AM">
+<meta property="article:tag" content="static_analyse">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>静态分析学习笔记</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2020/07/29/disassemble2/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/07/20/disassemble/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2020/07/22/static-analyse/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&text=静态分析学习笔记"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&title=静态分析学习笔记"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&is_video=false&description=静态分析学习笔记"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=静态分析学习笔记&body=Check out this article: https://ic3-cr3am.github.io/2020/07/22/static-analyse/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&title=静态分析学习笔记"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&title=静态分析学习笔记"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&title=静态分析学习笔记"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&title=静态分析学习笔记"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&name=静态分析学习笔记&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&t=静态分析学习笔记"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E8%AF%9D"><span class="toc-number">1.</span> <span class="toc-text">一些话</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IR"><span class="toc-number">1.1.</span> <span class="toc-text">IR</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3AC%E2%80%94%E2%80%94%E4%B8%89%E5%9C%B0%E5%9D%80%E7%A0%81"><span class="toc-number">1.1.1.</span> <span class="toc-text">3AC——三地址码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SSA%EF%BC%88%E6%8F%90%E5%8F%8A%EF%BC%89"><span class="toc-number">1.1.2.</span> <span class="toc-text">SSA（提及）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E6%B5%81%E5%88%86%E6%9E%90"><span class="toc-number">1.1.3.</span> <span class="toc-text">控制流分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Basic-Blocks%EF%BC%88BB%EF%BC%8C%E5%9F%BA%E6%9C%AC%E5%9D%97%EF%BC%89"><span class="toc-number">1.1.4.</span> <span class="toc-text">Basic Blocks（BB，基本块）</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        静态分析学习笔记
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">IC3-CR3AM</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-07-22T21:01:34.000Z" class="dt-published" itemprop="datePublished">2020-07-22</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/static-analyse/" rel="tag">static_analyse</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/76852980_p0.png" class="">
+
+<h1 id="一些话"><a href="#一些话" class="headerlink" title="一些话"></a>一些话</h1><p>南大的软件分析课程最近放在b站上了，虽然只有一半的课程<br>老师讲的非常好，关于静态分析的课程这应该是国内第一个放在网上的，有兴趣的同学应该去看看<br>就我个人的理解，这门课是针对逆向的学术扩展<br>目前学习了两节课，再接再厉</p>
+<h2 id="IR"><a href="#IR" class="headerlink" title="IR"></a>IR</h2><p>静态分析是基于IR的，也就是中间语言进行分析的<br>选择IR而不是AST的理由：</p>
+<pre><code>IR更加“低级”  
+通常不依赖语言  
+简洁，没什么冗余信息  
+包含控制流信息  
+</code></pre>
+<p>虽然有些也能在ast上分析</p>
+<h3 id="3AC——三地址码"><a href="#3AC——三地址码" class="headerlink" title="3AC——三地址码"></a>3AC——三地址码</h3><p>定义：在每一条语句里，等号右边只能由一个操作符。以及一句语句里最多只有三个地址<br>以下一些基本的定义，</p>
+<pre><code>bop：二元操作  
+uop：一元操作  
+L:标签  
+rop：关系操作，例如大于等于
+</code></pre>
+<h3 id="SSA（提及）"><a href="#SSA（提及）" class="headerlink" title="SSA（提及）"></a>SSA（提及）</h3><p>Static Single Assignment<br>定义：</p>
+<pre><code>给每个定义一个新的名字  
+并且这个名字在后续语句里也会用到
+每个变量有且只有一个定义
+</code></pre>
+<p>对于合并操作有个专门的函数，叫做（Phi-function）<br>优点：对上下文的顺序，可以将控制流信息通过独立的名字，根据上下文进行推断出；定义和使用非常准确<br>缺点：引入太多变量和phi-funtion，会导致效率大大降低</p>
+<h3 id="控制流分析"><a href="#控制流分析" class="headerlink" title="控制流分析"></a>控制流分析</h3><p>这个分析经常被用来生成控制流图<br>控制流图又是控制分析的基础，一旦生成了图就可以用一些图论的结论，分析它的前驱后继的关系也相对容易<br>看下图，每个节点既可以用单独的三地址码语句，也可以用BB（Basic Block）<br><img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic/3AC.PNG"></p>
+<h3 id="Basic-Blocks（BB，基本块）"><a href="#Basic-Blocks（BB，基本块）" class="headerlink" title="Basic Blocks（BB，基本块）"></a>Basic Blocks（BB，基本块）</h3><p>基本块，将控制流按照一定的规则进行分割，将代码分成一块块，每一块都是一个BB，将所有的BB根据控制流连线就成了CFG——控制流图<br>定义：每一个块只有一个入口一个出口，本且将每一块填充的连续代码尽可能地多<br>BB的生成算法：  </p>
+<pre><code>1.找到所有BB的入口，
+    第一条指令
+    所有的跳转目标
+    跳转语句的下一条
+2.建立基本块，
+    将每一个入口下后续的语句纳入BB，直到碰到下一个入口
+</code></pre>
+<p>CFG生成算法：</p>
+<pre><code>1.块末尾的跳转到新块的头
+2.两个紧接着，上下会连续执行的块
+3.将原本三地址码的跳转标签换成BB的标签
+4.最后，加上入口和出口模块，主要是用来方便分析程序进行操作
+</code></pre>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E4%BA%9B%E8%AF%9D"><span class="toc-number">1.</span> <span class="toc-text">一些话</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#IR"><span class="toc-number">1.1.</span> <span class="toc-text">IR</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3AC%E2%80%94%E2%80%94%E4%B8%89%E5%9C%B0%E5%9D%80%E7%A0%81"><span class="toc-number">1.1.1.</span> <span class="toc-text">3AC——三地址码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SSA%EF%BC%88%E6%8F%90%E5%8F%8A%EF%BC%89"><span class="toc-number">1.1.2.</span> <span class="toc-text">SSA（提及）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A7%E5%88%B6%E6%B5%81%E5%88%86%E6%9E%90"><span class="toc-number">1.1.3.</span> <span class="toc-text">控制流分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Basic-Blocks%EF%BC%88BB%EF%BC%8C%E5%9F%BA%E6%9C%AC%E5%9D%97%EF%BC%89"><span class="toc-number">1.1.4.</span> <span class="toc-text">Basic Blocks（BB，基本块）</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2020/07/22/static-analyse/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&text=静态分析学习笔记"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&title=静态分析学习笔记"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&is_video=false&description=静态分析学习笔记"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=静态分析学习笔记&body=Check out this article: https://ic3-cr3am.github.io/2020/07/22/static-analyse/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&title=静态分析学习笔记"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&title=静态分析学习笔记"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&title=静态分析学习笔记"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&title=静态分析学习笔记"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&name=静态分析学习笔记&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2020/07/22/static-analyse/&t=静态分析学习笔记"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    IC3-CR3AM
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

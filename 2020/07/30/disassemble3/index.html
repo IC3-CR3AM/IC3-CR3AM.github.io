@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="虚函数题外话，个人理解，虚函数是多态机制的重要基础 虚函数机制虚函数：由virtual修饰虚表：存储虚函数首地址虚表指针：指向虚表首地址   类对象定义的时候就会调用构造函数初始化，这时候会把虚表地址存入虚表指针中另，虚表在程序中的地址相对固定，在链接的时候就已经确定下来了   调用过程：通过多态访问虚函数，先通过访问对象虚表指针找到虚表，再通过虚表内存的虚函数首地址访问到对应的虚函数但是，如">
+<meta property="og:type" content="article">
+<meta property="og:title" content="c++反汇编小结（3）">
+<meta property="og:url" content="https://ic3-cr3am.github.io/2020/07/30/disassemble3/index.html">
+<meta property="og:site_name" content="IC3-CR3AM blog">
+<meta property="og:description" content="虚函数题外话，个人理解，虚函数是多态机制的重要基础 虚函数机制虚函数：由virtual修饰虚表：存储虚函数首地址虚表指针：指向虚表首地址   类对象定义的时候就会调用构造函数初始化，这时候会把虚表地址存入虚表指针中另，虚表在程序中的地址相对固定，在链接的时候就已经确定下来了   调用过程：通过多态访问虚函数，先通过访问对象虚表指针找到虚表，再通过虚表内存的虚函数首地址访问到对应的虚函数但是，如">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p3.jpg">
+<meta property="article:published_time" content="2020-07-30T14:55:04.000Z">
+<meta property="article:modified_time" content="2024-04-18T15:43:46.686Z">
+<meta property="article:author" content="IC3-CR3AM">
+<meta property="article:tag" content="disassemble">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p3.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>c++反汇编小结（3）</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/07/29/disassemble2/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2020/07/30/disassemble3/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&text=c++反汇编小结（3）"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&title=c++反汇编小结（3）"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&is_video=false&description=c++反汇编小结（3）"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=c++反汇编小结（3）&body=Check out this article: https://ic3-cr3am.github.io/2020/07/30/disassemble3/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&title=c++反汇编小结（3）"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&title=c++反汇编小结（3）"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&title=c++反汇编小结（3）"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&title=c++反汇编小结（3）"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&name=c++反汇编小结（3）&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&t=c++反汇编小结（3）"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E5%87%BD%E6%95%B0"><span class="toc-number">1.</span> <span class="toc-text">虚函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E5%87%BD%E6%95%B0%E6%9C%BA%E5%88%B6"><span class="toc-number">1.1.</span> <span class="toc-text">虚函数机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E8%99%9A%E8%A1%A8%E6%9F%A5%E6%89%BE%E7%9B%B8%E5%85%B3%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="toc-number">1.2.</span> <span class="toc-text">通过虚表查找相关构造函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF%E5%92%8C%E5%A4%9A%E9%87%8D%E7%BB%A7%E6%89%BF"><span class="toc-number">2.</span> <span class="toc-text">继承和多重继承</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%86%E5%88%AB%E7%B1%BB%E5%92%8C%E7%B1%BB%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">2.1.</span> <span class="toc-text">识别类和类的关系</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%90%E7%B1%BB%E4%BD%BF%E7%94%A8%E7%88%B6%E7%B1%BB%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0"><span class="toc-number">2.1.1.</span> <span class="toc-text">子类使用父类成员函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%9A%E9%87%8D%E7%BB%A7%E6%89%BF"><span class="toc-number">2.1.2.</span> <span class="toc-text">多重继承</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%99%9A%E5%9F%BA%E7%B1%BB"><span class="toc-number">2.1.3.</span> <span class="toc-text">虚基类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8F%B1%E5%BD%A2%E7%BB%A7%E6%89%BF"><span class="toc-number">2.1.4.</span> <span class="toc-text">菱形继承</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        c++反汇编小结（3）
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">IC3-CR3AM</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2020-07-30T14:55:04.000Z" class="dt-published" itemprop="datePublished">2020-07-30</time>
+        
+      
+    </div>
+
+
+      
+
+      
+    <div class="article-tag">
+        <i class="fa-solid fa-tag"></i>
+        <a class="p-category" href="/tags/disassemble/" rel="tag">disassemble</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <img src="https://wesite-1257887066.cos.ap-shanghai.myqcloud.com/smallPic%2F62799720_p3.jpg" class="">
+
+<h2 id="虚函数"><a href="#虚函数" class="headerlink" title="虚函数"></a>虚函数</h2><p>题外话，个人理解，虚函数是多态机制的重要基础</p>
+<h3 id="虚函数机制"><a href="#虚函数机制" class="headerlink" title="虚函数机制"></a>虚函数机制</h3><p>虚函数：由virtual修饰<br>虚表：存储虚函数首地址<br>虚表指针：指向虚表首地址  </p>
+<p>类对象定义的时候就会调用构造函数初始化，这时候会把虚表地址存入虚表指针中<br>另，虚表在程序中的地址相对固定，在链接的时候就已经确定下来了  </p>
+<p>调用过程：<br>通过多态访问虚函数，先通过访问对象虚表指针找到虚表，再通过虚表内存的虚函数首地址访问到对应的虚函数<br>但是，如果对象直接使用了自身的成员虚函数，则不必通过间接的访问方式，直接通过偏移访问对应虚函数  </p>
+<p>另，不仅仅构造函数会调用，析构函数也会对虚表指针进行操作，重新让虚表指针指向自身虚表，防止成员函数修改虚表指针导致析构出错  </p>
+<h3 id="通过虚表查找相关构造函数"><a href="#通过虚表查找相关构造函数" class="headerlink" title="通过虚表查找相关构造函数"></a>通过虚表查找相关构造函数</h3><p>由于构造函数可能会被重载比较复杂，可以从析构函数找起<br>先找到全局调用atexit函数的地方，可知atexit的参数就是析构函数的代理函数，从这个代理函数就能找到对应的析构函数，再根据这个析构函数所关联的虚表，找到所有关联这个虚表所有的构造函数和析构函数</p>
+<h2 id="继承和多重继承"><a href="#继承和多重继承" class="headerlink" title="继承和多重继承"></a>继承和多重继承</h2><h3 id="识别类和类的关系"><a href="#识别类和类的关系" class="headerlink" title="识别类和类的关系"></a>识别类和类的关系</h3><p>冷知识，父类的私有成员变量，也存储在子类中，不允许访问只存在于编译层面  </p>
+<p>在定义对象的时候会优先调用父类的构造函数再子类的构造函数（废话）<br>那么子类对象的内存布局是什么样的？<br>对象的首地址存放的是父类的成员，接着才是子类的成员，这也是为什么子类对象能操作父类的变量，因为数据都存在子类对象里<br>这样做的好处就是在使用多态性质的时候，将子类类型转换成父类时也不会出错  </p>
+<h4 id="子类使用父类成员函数"><a href="#子类使用父类成员函数" class="headerlink" title="子类使用父类成员函数"></a>子类使用父类成员函数</h4><p>按理说子类中没有保存父类的成员函数，应该是访问不到的<br>但是编译器通过名称粉碎法（暂时还不了解），在成员函数调用其他成员函数时可以匹配当前作用域  </p>
+<h4 id="多重继承"><a href="#多重继承" class="headerlink" title="多重继承"></a>多重继承</h4><p>在内存中，多个父类在对象中的内存布局，取决于多个父类的顺序，靠左边的父类在内存中排前面，然后按顺序排列<br>并且在使用多态的时候也不单单把对象首地址当作this指针，而是会根据父类来移动一段距离，找到父类的内存地址作为this指针<br>同时在类的内存中保存着所有父类的虚表<br>构造函数依次调用每一个父类的构造函数  </p>
+<h4 id="虚基类"><a href="#虚基类" class="headerlink" title="虚基类"></a>虚基类</h4><p>也就是抽象类<br>之前一直不是很理解抽象类存在的意义，很多时候不用抽象类也能完成<br>看了汇编之后发现，通过继承抽象类，直接继承到了抽象类的虚表以及虚表指针，使得更好的完成多态  </p>
+<p>因为纯虚函数没有实现，内存中指向的虚函数地址为空。编译器为了防止误用纯虚函数把首地址改为了__purecall，如果触发就会发出错误编码信息0x19<br>并且在release编译器下，纯虚函数会被优化掉  </p>
+<h4 id="菱形继承"><a href="#菱形继承" class="headerlink" title="菱形继承"></a>菱形继承</h4><p>菱形继承会产生多义性的问题<br>为了解决这个问题引入了虚继承的概念，出了在对象内存中保存所有父类和祖父类的信息外还会额外生虚函数和虚函数偏移，这些虚函数对应使用虚继承的父类<br>添加这两项是为了计算出父类的虚表指针，这样就有了所有父类的虚表指针，在使用多态的时候直接找子类和父类共有的虚函数，继承自其他父类的虚函数是访问不到的  </p>
+<p>构造标记：当子类实例化的时候按照之前的规则会调用父类的构造函数，这会多次调用祖父类的构造函数。为了防止这样的情况，子类使用构造函数的时候，传入了一个构造标记。在添加标记之后，一旦识别到这个标记就会跳过重复调用的祖父类构造函数<br>但是析构函数就没有这样加东西，还是将祖父类放到最后进行析构  </p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%99%9A%E5%87%BD%E6%95%B0"><span class="toc-number">1.</span> <span class="toc-text">虚函数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%99%9A%E5%87%BD%E6%95%B0%E6%9C%BA%E5%88%B6"><span class="toc-number">1.1.</span> <span class="toc-text">虚函数机制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%80%9A%E8%BF%87%E8%99%9A%E8%A1%A8%E6%9F%A5%E6%89%BE%E7%9B%B8%E5%85%B3%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="toc-number">1.2.</span> <span class="toc-text">通过虚表查找相关构造函数</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%A7%E6%89%BF%E5%92%8C%E5%A4%9A%E9%87%8D%E7%BB%A7%E6%89%BF"><span class="toc-number">2.</span> <span class="toc-text">继承和多重继承</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AF%86%E5%88%AB%E7%B1%BB%E5%92%8C%E7%B1%BB%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">2.1.</span> <span class="toc-text">识别类和类的关系</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%AD%90%E7%B1%BB%E4%BD%BF%E7%94%A8%E7%88%B6%E7%B1%BB%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0"><span class="toc-number">2.1.1.</span> <span class="toc-text">子类使用父类成员函数</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%A4%9A%E9%87%8D%E7%BB%A7%E6%89%BF"><span class="toc-number">2.1.2.</span> <span class="toc-text">多重继承</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%99%9A%E5%9F%BA%E7%B1%BB"><span class="toc-number">2.1.3.</span> <span class="toc-text">虚基类</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%8F%B1%E5%BD%A2%E7%BB%A7%E6%89%BF"><span class="toc-number">2.1.4.</span> <span class="toc-text">菱形继承</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2020/07/30/disassemble3/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&text=c++反汇编小结（3）"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&title=c++反汇编小结（3）"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&is_video=false&description=c++反汇编小结（3）"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=c++反汇编小结（3）&body=Check out this article: https://ic3-cr3am.github.io/2020/07/30/disassemble3/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&title=c++反汇编小结（3）"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&title=c++反汇编小结（3）"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&title=c++反汇编小结（3）"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&title=c++反汇编小结（3）"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&name=c++反汇编小结（3）&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2020/07/30/disassemble3/&t=c++反汇编小结（3）"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    IC3-CR3AM
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="服务端server&#x2F;main进去实现了一个cobra，自定义了参数，例如grpc开放的端口和host 初始化 创建隐藏配置文件的文件夹 初始化ca和wg的key等等密码学相关参数 初始化服务器启动相关参数，有就从文件里读 接着启动c2和console的持久化job 最后启动daemon或者console的grpc服务  c2 job揭秘该job是为了创建Listener设立，根据配置">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Sliver源码分析">
+<meta property="og:url" content="https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="IC3-CR3AM blog">
+<meta property="og:description" content="服务端server&#x2F;main进去实现了一个cobra，自定义了参数，例如grpc开放的端口和host 初始化 创建隐藏配置文件的文件夹 初始化ca和wg的key等等密码学相关参数 初始化服务器启动相关参数，有就从文件里读 接着启动c2和console的持久化job 最后启动daemon或者console的grpc服务  c2 job揭秘该job是为了创建Listener设立，根据配置">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/struct.jpg">
+<meta property="article:published_time" content="2024-04-03T18:26:07.000Z">
+<meta property="article:modified_time" content="2024-04-18T15:43:46.686Z">
+<meta property="article:author" content="IC3-CR3AM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/struct.jpg">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>Sliver源码分析</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2020/07/30/disassemble3/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&text=Sliver源码分析"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&title=Sliver源码分析"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&is_video=false&description=Sliver源码分析"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Sliver源码分析&body=Check out this article: https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&title=Sliver源码分析"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&title=Sliver源码分析"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&title=Sliver源码分析"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&title=Sliver源码分析"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&name=Sliver源码分析&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&t=Sliver源码分析"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="toc-number">1.</span> <span class="toc-text">服务端</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">1.1.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#c2-job%E6%8F%AD%E7%A7%98"><span class="toc-number">1.2.</span> <span class="toc-text">c2 job揭秘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#console-admin-job%E6%8F%AD%E7%A7%98"><span class="toc-number">1.3.</span> <span class="toc-text">console-admin job揭秘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AFGRPC-API%E8%A7%A3%E6%9E%90-TODO"><span class="toc-number">1.4.</span> <span class="toc-text">服务端GRPC API解析 TODO</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">2.</span> <span class="toc-text">客户端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">局部分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tunnel%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">3.1.</span> <span class="toc-text">Tunnel代码分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E5%86%8C%E7%9A%84%E5%90%90%E6%A7%BD"><span class="toc-number">3.2.</span> <span class="toc-text">注册的吐槽</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%86%E7%A0%81%E7%B3%BB%E7%BB%9F%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90-TODO"><span class="toc-number">3.3.</span> <span class="toc-text">密码系统实现分析 TODO</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">3.4.</span> <span class="toc-text">Event代码分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sliver-Implant%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">Sliver Implant分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B"><span class="toc-number">4.1.</span> <span class="toc-text">流程</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BB%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number"></span> <span class="toc-text">主体架构</span></a>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        Sliver源码分析
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">IC3-CR3AM</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-04-03T18:26:07.000Z" class="dt-published" itemprop="datePublished">2024-04-03</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <!-- # 流水账跟读分析 -->
+
+<h2 id="服务端"><a href="#服务端" class="headerlink" title="服务端"></a>服务端</h2><p>server&#x2F;main进去实现了一个cobra，自定义了参数，例如grpc开放的端口和host</p>
+<h3 id="初始化"><a href="#初始化" class="headerlink" title="初始化"></a>初始化</h3><ol>
+<li>创建隐藏配置文件的文件夹</li>
+<li>初始化ca和wg的key等等密码学相关参数</li>
+<li>初始化服务器启动相关参数，有就从文件里读</li>
+<li>接着启动c2和console的持久化job</li>
+<li>最后启动daemon或者console的grpc服务</li>
+</ol>
+<h3 id="c2-job揭秘"><a href="#c2-job揭秘" class="headerlink" title="c2 job揭秘"></a>c2 job揭秘</h3><p>该job是为了创建Listener设立，根据配置文件打开mlts、wg、DNS和Http监听（总共只有这四种类型的监听器）</p>
+<p>其核心为创建一个job结构体</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Job <span class="keyword">struct</span> &#123;</span><br><span class="line">    ID           <span class="type">int</span>       <span class="comment">// The unique identifier for the job</span></span><br><span class="line">    Name         <span class="type">string</span>    <span class="comment">// The name of the job</span></span><br><span class="line">    Description  <span class="type">string</span>    <span class="comment">// A detailed description of what the job does</span></span><br><span class="line">    Protocol     <span class="type">string</span>    <span class="comment">// The protocol that the job uses</span></span><br><span class="line">    Port         <span class="type">uint16</span>    <span class="comment">// The port that the job uses</span></span><br><span class="line">    Domains      []<span class="type">string</span>  <span class="comment">// An array of domains that the job covers</span></span><br><span class="line">    JobCtrl      <span class="keyword">chan</span> <span class="type">bool</span> <span class="comment">// A control channel for the job</span></span><br><span class="line">    PersistentID <span class="type">string</span>    <span class="comment">// A persistent identifier for the job</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>其中id为唯一递增序列号</p>
+<p>jobCtrl为控制job是否关闭的chan</p>
+<p>并在最后把Job放入一个全局结构体中</p>
+<p>吐槽：只有四种监听器，不够灵活，不过结构好直接自定义也行，不知msf如何写一个万能监听器的。</p>
+<h3 id="console-admin-job揭秘"><a href="#console-admin-job揭秘" class="headerlink" title="console-admin job揭秘"></a>console-admin job揭秘</h3><p>这个job是为了客户端接入服务的，打开给客户端连接的grpc接口，采用的和上面的是一套job结构。</p>
+<p>同样，它的grpc一套也是给和daemon的grpc公用的</p>
+<h3 id="服务端GRPC-API解析-TODO"><a href="#服务端GRPC-API解析-TODO" class="headerlink" title="服务端GRPC API解析 TODO"></a>服务端GRPC API解析 TODO</h3><h2 id="客户端"><a href="#客户端" class="headerlink" title="客户端"></a>客户端</h2><p>同样是cobra起手，初始化日志记录，根据读取的配置文件连接服务器，建立mtls的grpc连接</p>
+<p>使用grumble建立交互式控制台</p>
+<ol>
+<li><p>初始化<code>SliverConsoleClient</code> 对象</p>
+ <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> SliverConsoleClient <span class="keyword">struct</span> &#123;</span><br><span class="line">	App                      *grumble.App</span><br><span class="line">	Rpc                      rpcpb.SliverRPCClient</span><br><span class="line">	ActiveTarget             *ActiveTarget</span><br><span class="line">	EventListeners           *sync.Map</span><br><span class="line">	BeaconTaskCallbacks      <span class="keyword">map</span>[<span class="type">string</span>]BeaconTaskCallback</span><br><span class="line">	BeaconTaskCallbacksMutex *sync.Mutex</span><br><span class="line">	IsServer                 <span class="type">bool</span></span><br><span class="line">	Settings                 *assets.ClientSettings</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>绑定命令</p>
+<ul>
+<li>从文件加载Reaction事件</li>
+<li>从<code>alias.json</code>中加载别名到sliver shell中</li>
+<li>从<code>extension.json</code>中解析json并加载扩展</li>
+<li>将<code>Aliases</code>、<code>Armory</code>、<code>Update</code>、<code>Jobs</code>、<code>Operators</code>、<code>Reconfig</code>、<code>Sessions</code>、<code>Close</code>、<code>Tasks</code>、<code>Use</code>、<code>Settings</code>、<code>Info</code>、<code>Shell</code>、<code>Shellcode Encoders</code>、<code>Exec</code>、<code>Generate</code>、<code>Filesystem</code>、<code>Network</code>、<code>Privileges</code>、<code>Websites</code>、<code>Screenshot</code>、<code>Backdoor</code>、<code>Beacons</code>、<code>Environment</code>、<code>Licenses</code>、<code>Registry</code>、<code>Reverse Port Forwarding</code>、<code>Pivots</code>、<code>WireGuard</code>、<code>Portfwd</code>、<code>Socks</code>、<code>Monitor</code>、<code>Loot</code>、<code>Hosts</code>、<code>Reactions</code>、<code>DLL Hijack</code>、<code>Get Privs</code>、<code>Extensions</code>、<code>Prelude&#39;s Operator</code>、<code>Curse Commands</code>、<code>Builders</code>等加入命令</li>
+</ul>
+</li>
+<li><p>增加<code>Observers</code>当session发生变化时提醒</p>
+</li>
+<li><p>创新线程调用event的grpc stream</p>
+</li>
+<li><p>根据事件类型触发相应的Reaction</p>
+</li>
+<li><p>解析传入的隧道消息，并将其分发到会话&#x2F;隧道对象中</p>
+</li>
+<li><p>跑命令行，循环读取键盘输入</p>
+</li>
+</ol>
+<h2 id="局部分析"><a href="#局部分析" class="headerlink" title="局部分析"></a>局部分析</h2><h3 id="Tunnel代码分析"><a href="#Tunnel代码分析" class="headerlink" title="Tunnel代码分析"></a>Tunnel代码分析</h3><p><strong>client</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> TunnelIO <span class="keyword">struct</span> &#123;</span><br><span class="line">	ID        <span class="type">uint64</span></span><br><span class="line">	SessionID <span class="type">string</span></span><br><span class="line"></span><br><span class="line">	Send <span class="keyword">chan</span> []<span class="type">byte</span></span><br><span class="line">	Recv <span class="keyword">chan</span> []<span class="type">byte</span></span><br><span class="line"></span><br><span class="line">	isOpen <span class="type">bool</span></span><br><span class="line">	mutex  *sync.RWMutex</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>整体上是一个client stream的grpc调用，其底层是TunnelIO ，上面由tunnels管理，再由tunnel负责调用。调用会触发server端rpc-tunnel，其实现在server&#x2F;core&#x2F;tunnels中</p>
+<p><strong>server</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Tunnel <span class="keyword">struct</span> &#123;</span><br><span class="line">	ID        <span class="type">uint64</span></span><br><span class="line">	SessionID <span class="type">string</span></span><br><span class="line"></span><br><span class="line">	ToImplant         <span class="keyword">chan</span> []<span class="type">byte</span></span><br><span class="line">	ToImplantSequence <span class="type">uint64</span></span><br><span class="line"></span><br><span class="line">	FromImplant         <span class="keyword">chan</span> *sliverpb.TunnelData</span><br><span class="line">	FromImplantSequence <span class="type">uint64</span></span><br><span class="line"></span><br><span class="line">	Client rpcpb.SliverRPC_TunnelDataServer</span><br><span class="line"></span><br><span class="line">	mutex               *sync.RWMutex</span><br><span class="line">	lastDataMessageTime time.Time</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>本身这个tunnel是全双工，上层不需要操心，但是sliver只把这个作为将implant返回消息转发给client的通道，其他调用都是有其他rpc实现</p>
+<p><strong>implant</strong></p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Tunnel <span class="keyword">struct</span> &#123;</span><br><span class="line">	ID <span class="type">uint64</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">// Reader       io.ReadCloser</span></span><br><span class="line">	Readers      []io.ReadCloser</span><br><span class="line">	readSequence <span class="type">uint64</span></span><br><span class="line"></span><br><span class="line">	Writer        io.WriteCloser</span><br><span class="line">	writeSequence <span class="type">uint64</span></span><br><span class="line"></span><br><span class="line">	mutex *sync.RWMutex</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>implant如此实现的好处很明显，结构化标准化，不需要一次传输大量数据，只要将数据加载进缓存，根据需要发送数据，</p>
+<p>那么转发实现的结构是什么呢？</p>
+<ol>
+<li><p>implant先封装数据到envelope，再序列化成<code>TunnelData</code>，其中包含数据的顺序，因为传输并不会顺序传输</p>
+</li>
+<li><p>implant向server的listener发起mtls&#x2F;http&#x2F;……等，建立连接并传输数据</p>
+</li>
+<li><p>server获取各种调用的句柄</p>
+ <figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">map</span>[<span class="type">uint32</span>]ServerHandler&#123;</span><br><span class="line">		<span class="comment">// Sessions</span></span><br><span class="line">		sliverpb.MsgRegister:    registerSessionHandler,</span><br><span class="line">		sliverpb.MsgTunnelData:  tunnelDataHandler,</span><br><span class="line">		sliverpb.MsgTunnelClose: tunnelCloseHandler,</span><br><span class="line">		sliverpb.MsgPing:        pingHandler,</span><br><span class="line">		sliverpb.MsgSocksData:   socksDataHandler,</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Beacons</span></span><br><span class="line">		sliverpb.MsgBeaconRegister: beaconRegisterHandler,</span><br><span class="line">		sliverpb.MsgBeaconTasks:    beaconTasksHandler,</span><br><span class="line"></span><br><span class="line">		<span class="comment">// Pivots</span></span><br><span class="line">		sliverpb.MsgPivotPeerEnvelope: pivotPeerEnvelopeHandler,</span><br><span class="line">		sliverpb.MsgPivotPeerFailure:  pivotPeerFailureHandler,</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>server读取conn中的数据，有些需要先解密，后根据其中的type进行调用（sliver规定了一套implant回传数据的结构）</p>
+</li>
+<li><p>执行tunnelDataHandler，先匹配session id再判断是否要建立反向tunnel，不需要才执行根据id获取tunnel，调用<code>SendDataFromImplant</code>加入缓存队列</p>
+</li>
+<li><p>最后再客户端发起的<code>TunnelData</code>将数据通过grpc返回</p>
+</li>
+</ol>
+<h3 id="注册的吐槽"><a href="#注册的吐槽" class="headerlink" title="注册的吐槽"></a>注册的吐槽</h3><figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">&amp;sliverpb.Register&#123;</span><br><span class="line">		Name:              consts.SliverName,</span><br><span class="line">		Hostname:          hostname,</span><br><span class="line">		Uuid:              uuid,</span><br><span class="line">		Username:          currentUser.Username,</span><br><span class="line">		Uid:               currentUser.Uid,</span><br><span class="line">		Gid:               currentUser.Gid,</span><br><span class="line">		Os:                runtime.GOOS,</span><br><span class="line">		Version:           version.GetVersion(),</span><br><span class="line">		Arch:              runtime.GOARCH,</span><br><span class="line">		Pid:               <span class="type">int32</span>(os.Getpid()),</span><br><span class="line">		Filename:          filename,</span><br><span class="line">		ReconnectInterval: <span class="type">int64</span>(transports.GetReconnectInterval()),</span><br><span class="line">		ConfigID:          <span class="string">&quot;&#123;&#123; .Config.ID &#125;&#125;&quot;</span>,</span><br><span class="line">		PeerID:            pivots.MyPeerID,</span><br><span class="line">		Locale:            locale.GetLocale(),</span><br><span class="line">	&#125;</span><br></pre></td></tr></table></figure>
+
+<p>从impalnt开始就要实现这个grpc，封装好之后调用服务端grpc进行注册，无非中间的信道可以换</p>
+<p>信息获取太多，不够灵活，获取这些信息容易触动edr，需要更精简</p>
+<p>最精简的形式，应该是生成一个uuid，然后返回，server可以收到id和外部ip</p>
+<h3 id="密码系统实现分析-TODO"><a href="#密码系统实现分析-TODO" class="headerlink" title="密码系统实现分析 TODO"></a>密码系统实现分析 TODO</h3><h3 id="Event代码分析"><a href="#Event代码分析" class="headerlink" title="Event代码分析"></a>Event代码分析</h3><p>使用的是<code>PerRPCCredentials</code>，并且配置为block，只有在连接成功时才继续代码</p>
+<h2 id="Sliver-Implant分析"><a href="#Sliver-Implant分析" class="headerlink" title="Sliver Implant分析"></a>Sliver Implant分析</h2><p>sliver的implant算是比较庞大的一种beacon了，造成这样的原因有三：</p>
+<ol>
+<li>go编译带上运行时和混淆</li>
+<li>用donut转换成.net assembly</li>
+<li>implant携带了太多的功能</li>
+</ol>
+<h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><ol>
+<li>初始化</li>
+<li>判断执行环境</li>
+<li>注册svc服务运行、beacon心跳运行、session直连运行三选一</li>
+</ol>
+<p><strong>Beacon</strong></p>
+<p>开始一个beacon循环根据<code>.Config.ConnectionStrategy</code>选择连接策略，生成对应beacon</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">type</span> Beacon <span class="keyword">struct</span> &#123;</span><br><span class="line">	Init    BeaconInit</span><br><span class="line">	Start   BeaconStart</span><br><span class="line">	Send    BeaconSend</span><br><span class="line">	Recv    BeaconRecv</span><br><span class="line">	Close   BeaconClose</span><br><span class="line">	Cleanup BeaconCleanup</span><br><span class="line"></span><br><span class="line">	ActiveC2 <span class="type">string</span></span><br><span class="line">	ProxyURL <span class="type">string</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>所谓生成beacon就是完成上述实例的初始化，在start内完成相关连接</p>
+<p>有了Beacon后进入<code>beaconMainLoop</code></p>
+<p>调用对应beacon初始化，确认回连时间、向sliver server发送注册请求</p>
+<p>注册结构如下：</p>
+<figure class="highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&amp;sliverpb.BeaconRegister&#123;</span><br><span class="line">	ID:          InstanceID,</span><br><span class="line">	Interval:    beacon.Interval(),</span><br><span class="line">	Jitter:      beacon.Jitter(),</span><br><span class="line">	Register:    register,</span><br><span class="line">	NextCheckin: <span class="type">int64</span>(beacon.Duration().Seconds()),</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注册之后才是跑主程序</p>
+<p>先发心跳后接收，反序列化后加锁执行任务，最后返回id和结果</p>
+<p>结构非常清晰</p>
+<h1 id="主体架构"><a href="#主体架构" class="headerlink" title="主体架构"></a>主体架构</h1><p><img src="/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/struct.jpg" alt="主体架构.png"></p>
+<aside>
+💡 这里有个疑问，在第五步的时候，<-implantConnection.Send并不是缓存队列，而心跳并不会这么快的获取数据，理应在这里阻塞。那么一旦client再次发送请求就会因为这个send还未发出而被丢弃数据
+
+</aside>
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AF"><span class="toc-number">1.</span> <span class="toc-text">服务端</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-number">1.1.</span> <span class="toc-text">初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#c2-job%E6%8F%AD%E7%A7%98"><span class="toc-number">1.2.</span> <span class="toc-text">c2 job揭秘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#console-admin-job%E6%8F%AD%E7%A7%98"><span class="toc-number">1.3.</span> <span class="toc-text">console-admin job揭秘</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9C%8D%E5%8A%A1%E7%AB%AFGRPC-API%E8%A7%A3%E6%9E%90-TODO"><span class="toc-number">1.4.</span> <span class="toc-text">服务端GRPC API解析 TODO</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%A2%E6%88%B7%E7%AB%AF"><span class="toc-number">2.</span> <span class="toc-text">客户端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B1%80%E9%83%A8%E5%88%86%E6%9E%90"><span class="toc-number">3.</span> <span class="toc-text">局部分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Tunnel%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">3.1.</span> <span class="toc-text">Tunnel代码分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B3%A8%E5%86%8C%E7%9A%84%E5%90%90%E6%A7%BD"><span class="toc-number">3.2.</span> <span class="toc-text">注册的吐槽</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%86%E7%A0%81%E7%B3%BB%E7%BB%9F%E5%AE%9E%E7%8E%B0%E5%88%86%E6%9E%90-TODO"><span class="toc-number">3.3.</span> <span class="toc-text">密码系统实现分析 TODO</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Event%E4%BB%A3%E7%A0%81%E5%88%86%E6%9E%90"><span class="toc-number">3.4.</span> <span class="toc-text">Event代码分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Sliver-Implant%E5%88%86%E6%9E%90"><span class="toc-number">4.</span> <span class="toc-text">Sliver Implant分析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B"><span class="toc-number">4.1.</span> <span class="toc-text">流程</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%BB%E4%BD%93%E6%9E%B6%E6%9E%84"><span class="toc-number"></span> <span class="toc-text">主体架构</span></a>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&text=Sliver源码分析"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&title=Sliver源码分析"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&is_video=false&description=Sliver源码分析"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Sliver源码分析&body=Check out this article: https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&title=Sliver源码分析"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&title=Sliver源码分析"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&title=Sliver源码分析"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&title=Sliver源码分析"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&name=Sliver源码分析&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/&t=Sliver源码分析"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    IC3-CR3AM
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

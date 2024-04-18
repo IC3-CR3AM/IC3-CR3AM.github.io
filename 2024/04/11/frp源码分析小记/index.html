@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="frp源码分析小记翻看很多文章对frp的运行原理和实现相当模糊，于是萌生了阅读源码的想法，以下是阅读代码后整理的一些笔记 目前最新的dev版本在0.56 frp基础结构最新版的代码结构非常清晰易懂，其主体结构自cmd始，分别在client和server中实现，最后封装了底层各种库，看不到复杂的细节。 这里先仅仅看client↔server的交互，作用是作为整个链路建立的底层，相当于会话层和表示层">
+<meta property="og:type" content="article">
+<meta property="og:title" content="frp源码分析小记">
+<meta property="og:url" content="https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/index.html">
+<meta property="og:site_name" content="IC3-CR3AM blog">
+<meta property="og:description" content="frp源码分析小记翻看很多文章对frp的运行原理和实现相当模糊，于是萌生了阅读源码的想法，以下是阅读代码后整理的一些笔记 目前最新的dev版本在0.56 frp基础结构最新版的代码结构非常清晰易懂，其主体结构自cmd始，分别在client和server中实现，最后封装了底层各种库，看不到复杂的细节。 这里先仅仅看client↔server的交互，作用是作为整个链路建立的底层，相当于会话层和表示层">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2024-04-11T19:46:50.000Z">
+<meta property="article:modified_time" content="2024-04-18T15:43:46.686Z">
+<meta property="article:author" content="IC3-CR3AM">
+<meta name="twitter:card" content="summary">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>frp源码分析小记</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" aria-label="Previous post" href="/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/"><i class="fa-solid fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2024/04/03/Sliver%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&text=frp源码分析小记"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&title=frp源码分析小记"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&is_video=false&description=frp源码分析小记"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=frp源码分析小记&body=Check out this article: https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&title=frp源码分析小记"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&title=frp源码分析小记"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&title=frp源码分析小记"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&title=frp源码分析小记"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&name=frp源码分析小记&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&t=frp源码分析小记"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0"><span class="toc-number">1.</span> <span class="toc-text">frp源码分析小记</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#frp%E5%9F%BA%E7%A1%80%E7%BB%93%E6%9E%84"><span class="toc-number">1.0.1.</span> <span class="toc-text">frp基础结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.0.2.</span> <span class="toc-text">协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">1.0.3.</span> <span class="toc-text">小结</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        frp源码分析小记
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">IC3-CR3AM</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-04-11T19:46:50.000Z" class="dt-published" itemprop="datePublished">2024-04-11</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <h1 id="frp源码分析小记"><a href="#frp源码分析小记" class="headerlink" title="frp源码分析小记"></a>frp源码分析小记</h1><p>翻看很多文章对frp的运行原理和实现相当模糊，于是萌生了阅读源码的想法，以下是阅读代码后整理的一些笔记</p>
+<p>目前最新的dev版本在0.56</p>
+<h3 id="frp基础结构"><a href="#frp基础结构" class="headerlink" title="frp基础结构"></a>frp基础结构</h3><p>最新版的代码结构非常清晰易懂，其主体结构自cmd始，分别在client和server中实现，最后封装了底层各种库，看不到复杂的细节。</p>
+<p>这里先仅仅看client↔server的交互，作用是作为整个链路建立的底层，相当于会话层和表示层</p>
+<p>在正常工作下，整个交互过程如下：</p>
+<ol>
+<li>client轮询登陆server</li>
+<li>server验证并返回属于该client的RunID，此时client收到数据后会立即断开login的conn</li>
+<li>client会根据心跳时间发起下一个login请求，此时第二个才是真正负责起心跳的信道。如果这条信道断了，快速重发三次，间隔200毫秒，再是20秒的间隔重发</li>
+<li>server在新线程里向client发送一个<code>msg.NewWorkConn</code>，请求workConn（真正工作的连接）</li>
+<li>client收到请求后向server发起workConn</li>
+<li>server接收到请求，注册建立起的请求，并放入资源池</li>
+</ol>
+<h3 id="协议"><a href="#协议" class="headerlink" title="协议"></a>协议</h3><p>接下来的流程根据用户设定的协议来</p>
+<p><strong>stcp场景：</strong></p>
+<p>需要用户自己在本机也是用frpc，称之为visitor。</p>
+<ol>
+<li>本机上根据配置文件，需要开端口的打开端口等待连接</li>
+<li>如果用户有连接访问该端口，该frpc会发起<code>msg.NewVisitorConn</code>请求，<ol>
+<li>client会发起<code>msg.NewProxy</code>请求，让server创建内部监听器。</li>
+</ol>
+</li>
+<li>server验证visitor，通过后<ol>
+<li>server，对通过的conn中的数据进行流式加密和压缩（这些都是作者手搓的），最后将该conn加入内部队列，proxy的internalListener.Accept获取到该conn</li>
+<li>同时本机，frpc会对传入conn和本机至server的conn进行数据交换</li>
+</ol>
+</li>
+<li>server的proxy从workpool（也就是资源池）中寻找存在的workConn，如果没有就向client申请一条，最后交换workConn和visitor的conn流量</li>
+<li>目标机client的proxy_manager处理之前<code>msg.NewWorkConn</code>请求的返回，会根据返回数据，向对应的服务发起请求，再把这个服务建立的连接与workConn进行数据交换</li>
+</ol>
+<p>这样一套完整的连接，其中要发生三次数据交换，frp的代码为<code>libio.Join(localConn, remote)</code></p>
+<p><strong>反向socks5场景：</strong></p>
+<ol>
+<li>client根据配置文件，发起带有端口的<code>msg.NewProxy</code>请求</li>
+<li>server收到请求，运行tcp代理并打开对应端口监听</li>
+<li>用户使用socks5连接server打开的端口，server的proxy从workpool中寻找workConn，如果没有就向client申请一条，最后交换workConn和用户conn的流量</li>
+<li>最后，client处理返回的workConn时要打开并解析该conn，即<code>armon/go-socks5</code>实现的解析协议。根据用户配置，创建新的连接，访问内网目标。</li>
+</ol>
+<h3 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h3><p>本文对frp部分的协议进行了分析，其代码实现有很多精彩的地方，为了清晰易懂并为将其放入，强烈推荐由相关需求的同学读一遍源码。尤其它的结构是它的闪光点，但加解密部分还需要打磨。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0"><span class="toc-number">1.</span> <span class="toc-text">frp源码分析小记</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#frp%E5%9F%BA%E7%A1%80%E7%BB%93%E6%9E%84"><span class="toc-number">1.0.1.</span> <span class="toc-text">frp基础结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.0.2.</span> <span class="toc-text">协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B0%8F%E7%BB%93"><span class="toc-number">1.0.3.</span> <span class="toc-text">小结</span></a></li></ol></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&text=frp源码分析小记"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&title=frp源码分析小记"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&is_video=false&description=frp源码分析小记"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=frp源码分析小记&body=Check out this article: https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&title=frp源码分析小记"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&title=frp源码分析小记"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&title=frp源码分析小记"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&title=frp源码分析小记"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&name=frp源码分析小记&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/&t=frp源码分析小记"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    IC3-CR3AM
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>

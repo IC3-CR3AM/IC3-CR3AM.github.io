@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
+    <meta name="description" content="网上找了一圈没有看到socks5在多跳环境下它是如何实现的，于是动手做了个小实验 环境配置启用了三台ubuntu虚拟机，使用gost设置了三个socks5代理，端口分别在5555、6666、7777上，使用proxychains依次代理。IP依次从143~145 发了一个curl包访问cn.bing.com wireshark在nat网卡上抓包 实验1这里抓不到curl访问本机的发起流量，从外部看">
+<meta property="og:type" content="article">
+<meta property="og:title" content="gost+Socks5多级代理抓包分析">
+<meta property="og:url" content="https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="IC3-CR3AM blog">
+<meta property="og:description" content="网上找了一圈没有看到socks5在多跳环境下它是如何实现的，于是动手做了个小实验 环境配置启用了三台ubuntu虚拟机，使用gost设置了三个socks5代理，端口分别在5555、6666、7777上，使用proxychains依次代理。IP依次从143~145 发了一个curl包访问cn.bing.com wireshark在nat网卡上抓包 实验1这里抓不到curl访问本机的发起流量，从外部看">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled.png">
+<meta property="og:image" content="https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_1.png">
+<meta property="og:image" content="https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_2.png">
+<meta property="og:image" content="https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_3.png">
+<meta property="og:image" content="https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_4.png">
+<meta property="og:image" content="https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_5.png">
+<meta property="og:image" content="https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_6.png">
+<meta property="og:image" content="https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_7.png">
+<meta property="article:published_time" content="2024-04-18T23:33:38.000Z">
+<meta property="article:modified_time" content="2024-04-18T15:43:46.686Z">
+<meta property="article:author" content="IC3-CR3AM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled.png">
+    
+    
+      
+        
+          <link rel="shortcut icon" href="/images/favicon.ico">
+        
+      
+      
+        
+          <link rel="icon" type="image/png" href="/images/favicon-192x192.png" sizes="192x192">
+        
+      
+      
+        
+          <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+        
+      
+    
+    <!-- title -->
+    <title>gost+Socks5多级代理抓包分析</title>
+    <!-- async scripts -->
+    <!-- Google Analytics -->
+
+
+    <!-- Umami Analytics -->
+
+
+    <!-- styles -->
+    
+<link rel="stylesheet" href="/css/style.css">
+
+    <!-- persian styles -->
+    
+    <!-- rss -->
+    
+    
+	<!-- mathjax -->
+	
+<meta name="generator" content="Hexo 7.1.1"></head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#" aria-label="Menu"><i class="fa-solid fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" aria-label="Top" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fa-solid fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" aria-label="Next post" href="/2024/04/11/frp%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90%E5%B0%8F%E8%AE%B0/"><i class="fa-solid fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" aria-label="Back to top" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" aria-label="Share post" href="#"><i class="fa-solid fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&text=gost+Socks5多级代理抓包分析"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&title=gost+Socks5多级代理抓包分析"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&is_video=false&description=gost+Socks5多级代理抓包分析"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=gost+Socks5多级代理抓包分析&body=Check out this article: https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/"><i class="fa-solid fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&title=gost+Socks5多级代理抓包分析"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&title=gost+Socks5多级代理抓包分析"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&title=gost+Socks5多级代理抓包分析"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&title=gost+Socks5多级代理抓包分析"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&name=gost+Socks5多级代理抓包分析&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&t=gost+Socks5多级代理抓包分析"><i class="fab fa-hacker-news " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    
+    
+      <div id="toc">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="toc-number">1.</span> <span class="toc-text">环境配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C1"><span class="toc-number">1.1.</span> <span class="toc-text">实验1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C2"><span class="toc-number">1.2.</span> <span class="toc-text">实验2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C3"><span class="toc-number">1.3.</span> <span class="toc-text">实验3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA"><span class="toc-number">1.4.</span> <span class="toc-text">结论</span></a></li></ol></li></ol>
+      </div>
+    
+  </span>
+</div>
+
+    
+    <div class="content index py4 ">
+        
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle p-name" itemprop="name headline">
+        gost+Socks5多级代理抓包分析
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author p-author h-card" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span class="p-name" itemprop="name">IC3-CR3AM</span>
+      </span>
+      
+    <div class="postdate">
+      
+        <time datetime="2024-04-18T23:33:38.000Z" class="dt-published" itemprop="datePublished">2024-04-18</time>
+        
+      
+    </div>
+
+
+      
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content e-content" itemprop="articleBody">
+    <p>网上找了一圈没有看到socks5在多跳环境下它是如何实现的，于是动手做了个小实验</p>
+<h2 id="环境配置"><a href="#环境配置" class="headerlink" title="环境配置"></a>环境配置</h2><p>启用了三台ubuntu虚拟机，使用gost设置了三个socks5代理，端口分别在5555、6666、7777上，使用proxychains依次代理。IP依次从143~145</p>
+<p>发了一个curl包访问cn.bing.com</p>
+<p>wireshark在nat网卡上抓包</p>
+<h3 id="实验1"><a href="#实验1" class="headerlink" title="实验1"></a>实验1</h3><p>这里抓不到curl访问本机的发起流量，从外部看结果如何</p>
+<p><img src="/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled.png" alt="Untitled"></p>
+<p>首先是143发起向144发起的6666端口三次tcp握手，接下来就是socks5的2rtt的交互，从写本之前的实验来看，第三个rtt应该是传输下一跳的ip和port</p>
+<p>结果这里是tls加密流量</p>
+<p><img src="/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_1.png" alt="Untitled"></p>
+<p>看了下gost，果然</p>
+<p><img src="/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_2.png" alt="Untitled"></p>
+<p>关掉加密再试一下，这次从proxy checker发起做测试，这样能抓到5555端口</p>
+<p>由于不是proxychain做chain代理，流量又不一样了</p>
+<p><strong>目前的结果</strong></p>
+<p>在第七个包告诉第一个socks代理节点，最终的目的url。16进制搜索了一下，总共出现了三次，意味着每一个代理都知道目的地址。</p>
+<p><img src="/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_3.png" alt="Untitled"></p>
+<p>按照时间顺序梳理下来</p>
+<ol>
+<li>首先本机与5555建立连接，告知5555也就是第一跳代理目的地址是哪里</li>
+<li>第一跳根据gost的设置，与第二跳建立连接，并告知第二跳，最终第三跳目的地</li>
+<li>第二跳与第三跳建立连接，并告知第三跳后一跳的目的地，结果发现没变，于是从栈里依次回退</li>
+<li>回退到告知每一跳最终目的地的url</li>
+<li>最后第三跳也就是最后一跳开始查询dns并建立http连接</li>
+<li>数据传输。。。</li>
+</ol>
+<h3 id="实验2"><a href="#实验2" class="headerlink" title="实验2"></a>实验2</h3><p><strong>使用proxychains在第四台虚拟机访问，抓流量，gost也提前设置好转发链</strong></p>
+<p><img src="/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_4.png" alt="Untitled"></p>
+<p>这里是从序号3开始，所以第七个包是序号10</p>
+<p>可以看到这里第七个包是不一样的，这里是下一跳的ip和端口</p>
+<p>跟上个实验类似，这里也是递归，无非是一个个先与下一跳建立连接，再传输数据，但是依然会在每一跳上传输目的地址，然后能在某一跳中看到全部的http流量</p>
+<p><img src="/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_5.png" alt="Untitled"></p>
+<p><img src="/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_6.png" alt="Untitled"></p>
+<h3 id="实验3"><a href="#实验3" class="headerlink" title="实验3"></a>实验3</h3><p><strong>最后一个实验，拆除gost转发链</strong></p>
+<p>上面的类似，这里的逻辑是每一跳单独和下一跳联系。并且由于不知道下一跳的地址，第二跳需要等待第一跳把第三跳的地址传输过来，见下图。</p>
+<p><img src="/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/Untitled_7.png" alt="Untitled"></p>
+<p>所以这里每一跳能见到之后所有的ip地址，所有的流量和请求，及其不安全。</p>
+<h3 id="结论"><a href="#结论" class="headerlink" title="结论"></a>结论</h3><p>socks5只是一个简单的代理方式，并不适合做任何隐私保护。</p>
+
+  </div>
+</article>
+
+
+
+        
+          <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+        
+          <li><a href="/">Home</a></li>
+        
+          <li><a href="/archives/">Writing</a></li>
+        
+          <li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li>
+        
+      </ul>
+    </div>
+
+    
+    
+      <div id="toc-footer" style="display: none">
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="toc-number">1.</span> <span class="toc-text">环境配置</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C1"><span class="toc-number">1.1.</span> <span class="toc-text">实验1</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C2"><span class="toc-number">1.2.</span> <span class="toc-text">实验2</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E9%AA%8C3"><span class="toc-number">1.3.</span> <span class="toc-text">实验3</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BB%93%E8%AE%BA"><span class="toc-number">1.4.</span> <span class="toc-text">结论</span></a></li></ol></li></ol>
+      </div>
+    
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.facebook.com/sharer.php?u=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://twitter.com/share?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&text=gost+Socks5多级代理抓包分析"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.linkedin.com/shareArticle?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&title=gost+Socks5多级代理抓包分析"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://pinterest.com/pin/create/bookmarklet/?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&is_video=false&description=gost+Socks5多级代理抓包分析"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=gost+Socks5多级代理抓包分析&body=Check out this article: https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/"><i class="fa-solid fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://getpocket.com/save?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&title=gost+Socks5多级代理抓包分析"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://reddit.com/submit?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&title=gost+Socks5多级代理抓包分析"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.stumbleupon.com/submit?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&title=gost+Socks5多级代理抓包分析"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://digg.com/submit?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&title=gost+Socks5多级代理抓包分析"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="http://www.tumblr.com/share/link?url=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&name=gost+Socks5多级代理抓包分析&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" target="_blank" rel="noopener" href="https://news.ycombinator.com/submitlink?u=https://ic3-cr3am.github.io/2024/04/18/gost-Socks5%E5%A4%9A%E7%BA%A7%E4%BB%A3%E7%90%86%E6%8A%93%E5%8C%85%E5%88%86%E6%9E%90/&t=gost+Socks5多级代理抓包分析"><i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fa-solid fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+          <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fa-solid fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fa-solid fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fa-solid fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+        
+        <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy;
+    
+    
+    2016-2024
+    IC3-CR3AM
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+        <!--
+       --><li><a href="/">Home</a></li><!--
+     --><!--
+       --><li><a href="/archives/">Writing</a></li><!--
+     --><!--
+       --><li><a target="_blank" rel="noopener" href="http://github.com/IC3-CR3AM">Projects</a></li><!--
+     -->
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+    </div>
+    <!-- styles -->
+
+
+
+  <link rel="preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" onload="this.onload=null;this.rel='stylesheet'"/>
+
+
+    <!-- jquery -->
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" crossorigin="anonymous"></script>
+
+
+
+
+<!-- clipboard -->
+
+  
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.7/clipboard.min.js" crossorigin="anonymous"></script>
+  
+  <script type="text/javascript">
+  $(function() {
+    // copy-btn HTML
+    var btn = "<span class=\"btn-copy tooltipped tooltipped-sw\" aria-label=\"Copy to clipboard!\">";
+    btn += '<i class="fa-regular fa-clone"></i>';
+    btn += '</span>';
+    // mount it!
+    $(".highlight table").before(btn);
+    var clip = new ClipboardJS('.btn-copy', {
+      text: function(trigger) {
+        return Array.from(trigger.nextElementSibling.querySelectorAll('.code')).reduce((str,it)=>str+it.innerText+'\n','')
+      }
+    });
+    clip.on('success', function(e) {
+      e.trigger.setAttribute('aria-label', "Copied!");
+      e.clearSelection();
+    })
+  })
+  </script>
+
+
+<script src="/js/main.js"></script>
+
+<!-- search -->
+
+<!-- Baidu Analytics -->
+
+<!-- Cloudflare Analytics -->
+
+<!-- Disqus Comments -->
+
+<!-- utterances Comments -->
+
+</body>
+</html>
